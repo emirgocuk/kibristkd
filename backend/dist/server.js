@@ -1,20 +1,20 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+// Rotaları import et
+import { router as authRouter } from "./router/authRoute.js";
 import { router as makaleRouter } from "./router/makaleRouter.js";
 import { router as yazarRouter } from "./router/yazarRouter.js";
-import { router as authRouter } from "./router/authRoute.js";
-import dotenv from "dotenv";
+// Entity'leri import et
 import { User } from "./entities/user.js";
+import { Makale } from "./entities/Makale.js";
 dotenv.config();
 const app = express();
-const port = 3000;
-app.use(express.json({ limit: "50mb" }));
-app.use(express.urlencoded({
-    limit: "50mb",
-    extended: true,
-}));
-const AppDataSource = new DataSource({
+const port = 3001;
+// AppDataSource'u dışa aktararak diğer dosyalardan erişilebilir yap
+export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST,
     port: 3306,
@@ -23,20 +23,28 @@ const AppDataSource = new DataSource({
     database: process.env.DB_DATABASE,
     synchronize: true,
     logging: false,
-    entities: [User],
+    entities: [User, Makale],
 });
-(async () => {
-    try {
-        await AppDataSource.initialize();
-        console.log("Data Source has been initialized!");
-    }
-    catch (error) {
-        console.error("Error during Data Source initialization", error);
-    }
-})();
-app.use("/api/auth/", authRouter);
-app.use("/api/makale/", yazarRouter);
-app.use("/api/makale/", makaleRouter);
-app.listen(port, () => {
-    console.log(`Uygulama http://localhost:${port} üzerinde çalışıyor.`);
+// Veritabanı bağlantısını kur ve ardından sunucuyu başlat
+AppDataSource.initialize()
+    .then(() => {
+    console.log("Data Source has been initialized!");
+    // Middleware'ler
+    app.use(cors()); // CORS'u burada kullan
+    app.use(express.json({ limit: "50mb" }));
+    app.use(express.urlencoded({
+        limit: "50mb",
+        extended: true,
+    }));
+    // API rotalarını kullan
+    app.use("/api", authRouter);
+    app.use("/api", yazarRouter);
+    app.use("/api", makaleRouter);
+    // Sunucuyu dinlemeye başla
+    app.listen(port, () => {
+        console.log(`Uygulama http://localhost:${port} üzerinde çalışıyor.`);
+    });
+})
+    .catch((error) => {
+    console.error("Error during Data Source initialization", error);
 });
