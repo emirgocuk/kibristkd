@@ -1,27 +1,33 @@
 import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Container, Box, TextField, Button, Typography, Paper, Alert } from '@mui/material';
 import logo from '../../photos/logo.png';
-import { useNavigate } from 'react-router-dom';
-import { Container, Box, TextField, Button, Typography, Paper } from '@mui/material';
 
-// Bu component, 'title' adında bir prop alarak sayfa başlığını dinamik olarak yazar.
-function LoginPage() {
+function RegisterPage() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setSuccess('');
+
+    if (!name || !email || !password) {
+      setError('Lütfen tüm alanları doldurun.');
+      return;
+    }
 
     try {
-      // Bu kısım Vite proxy ayarı sayesinde çalışacaktır.
-      const response = await fetch('/api/login', {
+      const response = await fetch('/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await response.json();
@@ -30,35 +36,37 @@ function LoginPage() {
         throw new Error(data.message || 'Bir hata oluştu.');
       }
 
-      console.log('Giriş Başarılı:', data);
-      localStorage.setItem('token', data.token);
-      
-      // Giriş başarılı olunca /girne (admin anasayfasına) yönlendir
-      navigate('/girne'); 
+      setSuccess('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
 
     } catch (err) {
       setError(err.message);
-      console.error('Giriş hatası:', err);
+      console.error('Kayıt hatası:', err);
     }
   };
 
   return (
     <Container component="main" maxWidth="xs">
       <Paper elevation={3} sx={{ mt: 8, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {/* LOGO EKLENDİ */}
-        <Box
-          component="img"
-          sx={{
-            height: 60,
-            mb: 2,
-          }}
-          alt="Logo"
-          src={logo}
-        />
+        <img src={logo} alt="Logo" style={{ height: 60, marginBottom: 16 }} />
         <Typography component="h1" variant="h5">
-          Yönetim Paneli Girişi
+          Yönetim Paneli - Kayıt Ol
         </Typography>
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="name"
+            label="Ad Soyad"
+            name="name"
+            autoComplete="name"
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
           <TextField
             margin="normal"
             required
@@ -67,7 +75,6 @@ function LoginPage() {
             label="E-posta Adresi"
             name="email"
             autoComplete="email"
-            autoFocus
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -79,14 +86,19 @@ function LoginPage() {
             label="Şifre"
             type="password"
             id="password"
-            autoComplete="current-password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
           {error && (
-            <Typography color="error" variant="body2" align="center" sx={{ mt: 2 }}>
+            <Alert severity="error" sx={{ width: '100%', mt: 2 }}>
               {error}
-            </Typography>
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ width: '100%', mt: 2 }}>
+              {success}
+            </Alert>
           )}
           <Button
             type="submit"
@@ -94,19 +106,20 @@ function LoginPage() {
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
           >
-            Giriş Yap
+            Kayıt Ol
           </Button>
-          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
-            Hesabınız yok mu?{' '}
-            <a href="/register" style={{ textDecoration: 'none', color: '#1976d2' }}>
-              Kayıt Olun
-            </a>
-          </Typography>
+          <Box textAlign="center">
+            <Typography variant="body2">
+              Zaten bir hesabınız var mı?{' '}
+              <Link to="/login" style={{ textDecoration: 'none' }}>
+                Giriş Yapın
+              </Link>
+            </Typography>
+          </Box>
         </Box>
       </Paper>
     </Container>
   );
 }
 
-// EN ÖNEMLİ KISIM: Bu satır bileşeni dışa aktarır.
-export default LoginPage;
+export default RegisterPage;

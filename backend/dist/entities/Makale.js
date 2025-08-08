@@ -7,7 +7,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from "typeorm";
+import { User } from "./user.js";
+export var MakaleStatus;
+(function (MakaleStatus) {
+    MakaleStatus["PENDING"] = "pending";
+    MakaleStatus["APPROVED"] = "approved";
+    MakaleStatus["REJECTED"] = "rejected";
+})(MakaleStatus || (MakaleStatus = {}));
 let Makale = class Makale {
 };
 __decorate([
@@ -22,6 +29,18 @@ __decorate([
     Column(),
     __metadata("design:type", String)
 ], Makale.prototype, "content", void 0);
+__decorate([
+    Column({
+        type: "enum",
+        enum: MakaleStatus,
+        default: MakaleStatus.PENDING
+    }),
+    __metadata("design:type", String)
+], Makale.prototype, "status", void 0);
+__decorate([
+    ManyToOne('User', (user) => user.makaleler),
+    __metadata("design:type", User)
+], Makale.prototype, "author", void 0);
 __decorate([
     CreateDateColumn(),
     __metadata("design:type", Date)

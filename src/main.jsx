@@ -18,6 +18,7 @@ import PlaceholderPage from './pages/PlaceholderPage.jsx';
 import AdminLayout from './admin/AdminLayout.jsx';
 import AdminDashboard from './admin/pages/AdminDashboard.jsx';
 import LoginPage from './admin/pages/LoginPage.jsx';
+import RegisterPage from './admin/pages/RegisterPage.jsx';
 import MakaleYonetimi from './admin/pages/MakaleYonetimi.jsx';
 import YazarYonetimi from './admin/pages/YazarYonetimi.jsx';
 
@@ -48,6 +49,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <LoginPage />
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />
   }
 ]);
 

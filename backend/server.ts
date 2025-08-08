@@ -16,7 +16,7 @@ import { Makale } from "./entities/Makale.js";
 dotenv.config();
 
 const app = express();
-const port = 3000;
+const port = 3001;
 
 // AppDataSource'u dışa aktararak diğer dosyalardan erişilebilir yap
 export const AppDataSource = new DataSource({
@@ -58,38 +58,3 @@ AppDataSource.initialize()
         console.error("Error during Data Source initialization", error);
     });
 
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
-
-export enum UserRole {
-    SUPERADMIN = "superadmin",
-    ADMIN = "admin",
-    YAZAR = "yazar"
-}
-
-@Entity()
-export class User {
-    @PrimaryGeneratedColumn()
-    id!: number;
-
-    @Column()
-    name!: string;
-
-    @Column({ unique: true })
-    email!: string;
-
-    @Column()
-    password!: string;
-
-    @Column({
-        type: "enum",
-        enum: UserRole,
-        default: UserRole.YAZAR
-    })
-    role!: UserRole;
-
-    @CreateDateColumn()
-    createdAt!: Date;
-
-    @UpdateDateColumn()
-    updatedAt!: Date;
-}
