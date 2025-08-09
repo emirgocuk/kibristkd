@@ -5,6 +5,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
 import SettingsIcon from '@mui/icons-material/Settings';
+import NoteIcon from '@mui/icons-material/Note';
 
 const drawerWidth = 260;
 
@@ -14,6 +15,7 @@ function AdminLayout() {
     { text: 'Makale Yönetimi', icon: <ArticleIcon />, path: '/girne/makaleler' },
     { text: 'Yazar Yönetimi', icon: <PeopleIcon />, path: '/girne/yazarlar' },
     { text: 'Ayarlar', icon: <SettingsIcon />, path: '/girne/ayarlar' },
+    { text: 'Geliştirme Notları', icon: <NoteIcon />, path: '/girne/notlar' },
   ];
 
   return (
