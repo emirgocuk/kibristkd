@@ -4,6 +4,7 @@ import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
+import NotesIcon from '@mui/icons-material/Notes';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 const drawerWidth = 260;
@@ -13,6 +14,7 @@ function AdminLayout() {
     { text: 'Anasayfa', icon: <DashboardIcon />, path: '/girne' },
     { text: 'Makale Yönetimi', icon: <ArticleIcon />, path: '/girne/makaleler' },
     { text: 'Yazar Yönetimi', icon: <PeopleIcon />, path: '/girne/yazarlar' },
+    { text: 'Geliştirme Notları', icon: <NotesIcon />, path: '/girne/notlar' },
     { text: 'Ayarlar', icon: <SettingsIcon />, path: '/girne/ayarlar' },
   ];
 
