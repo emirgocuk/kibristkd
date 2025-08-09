@@ -7,6 +7,15 @@ import { UserRole } from '../entities/user.js';
 export const router = Router();
 const settingRepo = AppDataSource.getRepository(Setting);
 
+router.get('/content', async (req, res) => {
+        try {
+                const setting = await settingRepo.findOne({ where: { id: 1 } });
+                res.json({ globalContent: setting?.globalContent || '' });
+        } catch (error) {
+                res.status(500).json({ message: 'İçerik yüklenirken bir hata oluştu.', error });
+        }
+});
+
 router.get('/', protect, authorize(UserRole.ADMIN, UserRole.SUPERADMIN), async (req, res) => {
         try {
                 let setting = await settingRepo.findOne({ where: { id: 1 } });
@@ -22,13 +31,16 @@ router.get('/', protect, authorize(UserRole.ADMIN, UserRole.SUPERADMIN), async (
 
 router.put('/', protect, authorize(UserRole.ADMIN, UserRole.SUPERADMIN), async (req, res) => {
         try {
-                const { allowAppPublishing } = req.body;
+                const { allowAppPublishing, globalContent } = req.body;
                 let setting = await settingRepo.findOne({ where: { id: 1 } });
                 if (!setting) {
                         setting = settingRepo.create({ id: 1 });
                 }
                 if (typeof allowAppPublishing === 'boolean') {
                         setting.allowAppPublishing = allowAppPublishing;
+                }
+                if (typeof globalContent === 'string') {
+                        setting.globalContent = globalContent;
                 }
                 await settingRepo.save(setting);
                 res.json(setting);

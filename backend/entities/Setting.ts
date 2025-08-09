@@ -7,4 +7,7 @@ export class Setting {
 
     @Column({ default: true })
     allowAppPublishing!: boolean;
+
+    @Column('text', { nullable: true })
+    globalContent!: string | null;
 }

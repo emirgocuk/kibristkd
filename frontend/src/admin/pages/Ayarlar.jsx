@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Paper, Typography, FormControlLabel, Switch, Alert } from '@mui/material';
+import { Paper, Typography, FormControlLabel, Switch, Alert, TextField, Button } from '@mui/material';
 import axios from 'axios';
 
 const Ayarlar = () => {
         const [allowAppPublishing, setAllowAppPublishing] = useState(true);
         const [message, setMessage] = useState('');
+        const [globalContent, setGlobalContent] = useState('');
 
         useEffect(() => {
                 const fetchSettings = async () => {
@@ -14,6 +15,7 @@ const Ayarlar = () => {
                                         headers: { Authorization: `Bearer ${token}` },
                                 });
                                 setAllowAppPublishing(res.data.allowAppPublishing);
+                                setGlobalContent(res.data.globalContent || '');
                         } catch (err) {
                                 setMessage('Ayarlar yüklenemedi.');
                                 console.error(err);
@@ -22,14 +24,12 @@ const Ayarlar = () => {
                 fetchSettings();
         }, []);
 
-        const handleToggle = async (e) => {
-                const value = e.target.checked;
-                setAllowAppPublishing(value);
+        const saveSettings = async (allowValue, contentValue) => {
                 const token = localStorage.getItem('token');
                 try {
                         await axios.put(
                                 '/api/settings',
-                                { allowAppPublishing: value },
+                                { allowAppPublishing: allowValue, globalContent: contentValue },
                                 { headers: { Authorization: `Bearer ${token}` } },
                         );
                         setMessage('Ayar güncellendi.');
@@ -37,6 +37,16 @@ const Ayarlar = () => {
                         setMessage('Ayar güncellenemedi.');
                         console.error(err);
                 }
+        };
+
+        const handleToggle = async (e) => {
+                const value = e.target.checked;
+                setAllowAppPublishing(value);
+                await saveSettings(value, globalContent);
+        };
+
+        const handleContentSave = async () => {
+                await saveSettings(allowAppPublishing, globalContent);
         };
 
         return (
@@ -53,6 +63,18 @@ const Ayarlar = () => {
                                 control={<Switch checked={allowAppPublishing} onChange={handleToggle} />}
                                 label="Uygulamadan yayınlamaya izin ver"
                         />
+                        <TextField
+                                label="Ortak Sayfa İçeriği"
+                                multiline
+                                minRows={4}
+                                value={globalContent}
+                                onChange={(e) => setGlobalContent(e.target.value)}
+                                fullWidth
+                                sx={{ mt: 2 }}
+                        />
+                        <Button variant="contained" sx={{ mt: 2 }} onClick={handleContentSave}>
+                                Kaydet
+                        </Button>
                 </Paper>
         );
 };

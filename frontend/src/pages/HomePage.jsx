@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Box } from '@mui/material';
+import { Container, Grid, Box, Typography } from '@mui/material';
 import axios from 'axios';
 
 import HeroSlider from '@/components/HeroSlider';
@@ -31,6 +31,12 @@ const HomePage = () => {
     return (
         <Box>
             <HeroSlider />
+            <Box sx={{ textAlign: 'center', py: 4, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
+                <Typography variant="h3">Derneğimize Hoş Geldiniz</Typography>
+                <Typography variant="subtitle1" sx={{ mt: 1 }}>
+                    Kıbrıs Türk kültürünü yaşatmak için çalışıyoruz.
+                </Typography>
+            </Box>
             <Container maxWidth="lg" sx={{ my: 4 }}>
                 <Grid container spacing={4}>
                     <Grid item xs={12} md={8}>

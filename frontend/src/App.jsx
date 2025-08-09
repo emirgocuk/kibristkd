@@ -4,6 +4,7 @@ import { Box, Fab, Fade, useScrollTrigger, Container, Typography } from '@mui/ma
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import GlobalContent from './components/GlobalContent.jsx';
 
 function ScrollTop(props) {
   const { children } = props;
@@ -43,6 +44,7 @@ function App() {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <Box id="back-to-top-anchor" />
       <Navbar />
+      <GlobalContent />
       <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default' }}>
         <Outlet />
       </Box>
