@@ -41,8 +41,8 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "makaleler", element: <MakaleYonetimi /> },
       { path: "yazarlar", element: <YazarYonetimi /> },
-      { path: "ayarlar", element: <Ayarlar /> },
       { path: "notlar", element: <GelistirmeNotlari /> },
+      { path: "ayarlar", element: <Ayarlar /> },
     ]
   },
   {

@@ -4,8 +4,8 @@ import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
+import NotesIcon from '@mui/icons-material/Notes';
 import SettingsIcon from '@mui/icons-material/Settings';
-import NoteIcon from '@mui/icons-material/Note';
 
 const drawerWidth = 260;
 
@@ -14,17 +14,14 @@ function AdminLayout() {
     { text: 'Anasayfa', icon: <DashboardIcon />, path: '/girne' },
     { text: 'Makale Yönetimi', icon: <ArticleIcon />, path: '/girne/makaleler' },
     { text: 'Yazar Yönetimi', icon: <PeopleIcon />, path: '/girne/yazarlar' },
+    { text: 'Geliştirme Notları', icon: <NotesIcon />, path: '/girne/notlar' },
     { text: 'Ayarlar', icon: <SettingsIcon />, path: '/girne/ayarlar' },
-    { text: 'Geliştirme Notları', icon: <NoteIcon />, path: '/girne/notlar' },
   ];
 
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      <AppBar 
-        position="fixed" 
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      >
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
             Yönetim Paneli
@@ -39,15 +36,13 @@ function AdminLayout() {
           [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
         }}
       >
-        <Toolbar /> 
+        <Toolbar />
         <Box sx={{ overflow: 'auto', p: 1 }}>
           <List>
-            {menuItems.map((item, index) => (
+            {menuItems.map((item) => (
               <ListItem key={item.text} disablePadding>
                 <ListItemButton component={RouterLink} to={item.path}>
-                  <ListItemIcon>
-                    {item.icon}
-                  </ListItemIcon>
+                  <ListItemIcon>{item.icon}</ListItemIcon>
                   <ListItemText primary={item.text} />
                 </ListItemButton>
               </ListItem>
@@ -55,15 +50,7 @@ function AdminLayout() {
           </List>
         </Box>
       </Drawer>
-      <Box 
-        component="main" 
-        sx={{ 
-          flexGrow: 1, 
-          p: 3, 
-          bgcolor: 'grey.50',
-          minHeight: '100vh' 
-        }}
-      >
+      <Box component="main" sx={{ flexGrow: 1, p: 3, bgcolor: 'grey.50', minHeight: '100vh' }}>
         <Toolbar />
         <Outlet />
       </Box>
