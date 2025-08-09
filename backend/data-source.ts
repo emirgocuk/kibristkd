@@ -3,7 +3,6 @@ import { DataSource } from "typeorm";
 import { User } from "./entities/user.js";
 import { Makale } from "./entities/Makale.js";
 import { Setting } from "./entities/Setting.js";
-import { DevNote } from "./entities/DevNote.js";
 
 export const AppDataSource = new DataSource({
   type: "mysql",
@@ -14,5 +13,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [User, Makale, Setting, DevNote],
+  entities: [User, Makale, Setting],
 });
