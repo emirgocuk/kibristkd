@@ -16,7 +16,8 @@
         "src",
         "router",
         "*.ts",
-        "entities"
+        "entities",
+        "scripts"
     ],
     "exclude": [
         "node_modules",

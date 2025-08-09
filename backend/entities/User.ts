@@ -1,24 +1,21 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
-export class Makale {
+export class User {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ length: 255 })
-  baslik!: string;
-
-  @Column("text")
-  icerik!: string;
-
   @Column({ length: 100 })
-  kategori!: string;
+  name!: string;
 
-  @Column({ type: "datetime" })
-  tarih!: Date;
+  @Column({ unique: true })
+  email!: string;
 
-  @Column({ nullable: true })
-  kapakResmi!: string;
+  @Column()
+  password!: string; // bcrypt hash
+
+  @Column({ default: "user" })
+  role!: string; // "admin" | "user"
 
   @CreateDateColumn()
   createdAt!: Date;
