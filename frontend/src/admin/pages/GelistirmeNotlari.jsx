@@ -30,9 +30,11 @@ function GelistirmeNotlari() {
     if (!token || !content.trim()) return;
     setLoading(true);
     try {
-      await axios.post('/api/devnotes', { content }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await axios.post(
+        '/api/devnotes',
+        { content },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setContent('');
       fetchNotes();
     } catch (err) {
@@ -55,13 +57,16 @@ function GelistirmeNotlari() {
           onChange={(e) => setContent(e.target.value)}
           margin="normal"
         />
-        <Button type="submit" variant="contained" disabled={loading}>Not Ekle</Button>
+        <Button type="submit" variant="contained" disabled={loading}>
+          Not Ekle
+        </Button>
       </form>
+
       <List sx={{ mt: 2 }}>
         {notes.map((note) => (
-          <ListItem key={note.id} alignItems="flex-start" divider>
+          <ListItem key={note.id ?? note._id ?? `${note.createdAt}-${Math.random()}`} divider>
             <ListItemText
-              primary={new Date(note.createdAt).toLocaleString()}
+              primary={note.createdAt ? new Date(note.createdAt).toLocaleString() : '—'}
               secondary={note.content}
             />
           </ListItem>
