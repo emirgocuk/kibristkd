@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
-	Box,
-	TextField,
-	Button,
-	Typography,
-	Paper,
-	List,
-	ListItem,
-	ListItemText,
-	ListItemSecondaryAction,
-	IconButton,
-	CircularProgress,
-	Alert,
-	Divider,
+        Box,
+        TextField,
+        Button,
+        Typography,
+        Paper,
+        List,
+        ListItem,
+        ListItemText,
+        ListItemSecondaryAction,
+        IconButton,
+        CircularProgress,
+        Alert,
+        Divider,
 } from '@mui/material';
+import TextEditor from '../components/TextEditor.jsx';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import axios from 'axios';
@@ -173,16 +174,9 @@ const MakaleYonetimi = () => {
 						onChange={(e) => setTitle(e.target.value)}
 						margin="normal"
 					/>
-					<TextField
-						label="Makale İçeriği"
-						fullWidth
-						required
-						multiline
-						rows={10}
-						value={content}
-						onChange={(e) => setContent(e.target.value)}
-						margin="normal"
-					/>
+                                        <Box sx={{ mt: 2 }}>
+                                                <TextEditor value={content} onChange={setContent} />
+                                        </Box>
 					<Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
 						Makaleyi Onaya Gönder
 					</Button>

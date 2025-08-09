@@ -4,6 +4,7 @@ import { AppDataSource } from './data-source.js';
 import { router as authRouter } from './router/authRoute.js';
 import { router as yazarRouter } from './router/yazarRouter.js';
 import { router as makaleRouter } from './router/makaleRouter.js';
+import { router as settingsRouter } from './router/settingsRouter.js';
 
 AppDataSource.initialize()
     .then(() => {
@@ -15,6 +16,7 @@ AppDataSource.initialize()
         app.use('/api/auth', authRouter);
         app.use('/api/yazarlar', yazarRouter);
         app.use('/api/makaleler', makaleRouter);
+        app.use('/api/settings', settingsRouter);
 
         const port = process.env.PORT || 5000;
         app.listen(port, () => {

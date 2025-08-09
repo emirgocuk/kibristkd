@@ -19,6 +19,7 @@ import AdminDashboard from './admin/pages/AdminDashboard.jsx';
 import LoginPage from './admin/pages/LoginPage.jsx';
 import MakaleYonetimi from './admin/pages/MakaleYonetimi.jsx';
 import YazarYonetimi from './admin/pages/YazarYonetimi.jsx';
+import Ayarlar from './admin/pages/Ayarlar.jsx';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "makaleler", element: <MakaleYonetimi /> },
       { path: "yazarlar", element: <YazarYonetimi /> },
+      { path: "ayarlar", element: <Ayarlar /> },
     ]
   },
   {
