@@ -19,6 +19,7 @@ import AdminDashboard from './admin/pages/AdminDashboard.jsx';
 import LoginPage from './admin/pages/LoginPage.jsx';
 import MakaleYonetimi from './admin/pages/MakaleYonetimi.jsx';
 import YazarYonetimi from './admin/pages/YazarYonetimi.jsx';
+import DevelopmentNotes from './admin/pages/DevelopmentNotes.jsx';
 import Ayarlar from './admin/pages/Ayarlar.jsx';
 import GelistirmeNotlari from './admin/pages/GelistirmeNotlari.jsx';
 
@@ -41,6 +42,7 @@ const router = createBrowserRouter([
       { index: true, element: <AdminDashboard /> },
       { path: "makaleler", element: <MakaleYonetimi /> },
       { path: "yazarlar", element: <YazarYonetimi /> },
+      { path: "notlar", element: <DevelopmentNotes /> },
       { path: "ayarlar", element: <Ayarlar /> },
       { path: "gelistirme-notlari", element: <GelistirmeNotlari /> },
     ]
