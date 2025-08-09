@@ -1,27 +1,30 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-// import dotenv from 'dotenv'; // This line would be removed if it existed
-// dotenv.config(); // This line would be removed if it existed
 import { UserRole } from '../entities/user.js';
 
 export const protect = (req: Request, res: Response, next: NextFunction) => {
-    let token;
+    const authHeader = req.headers.authorization;
 
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+
         try {
-            token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'varsayilan_gizli_anahtar') as { id: number, role: UserRole };
+            const secret = process.env.JWT_SECRET;
+            if (!secret) {
+                console.error('JWT_SECRET is not defined');
+                return res.status(500).json({ message: 'Sunucu yapılandırma hatası.' });
+            }
+
+            const decoded = jwt.verify(token, secret) as { id: number; role: UserRole };
             (req as any).user = decoded;
-            next();
+            return next();
         } catch (error) {
             console.error('Token doğrulama hatası', error);
-            res.status(401).json({ message: 'Yetkisiz işlem, token geçersiz.' });
+            return res.status(401).json({ message: 'Yetkisiz işlem, token geçersiz.' });
         }
     }
 
-    if (!token) {
-        res.status(401).json({ message: 'Yetkisiz işlem, token bulunamadı.' });
-    }
+    return res.status(401).json({ message: 'Yetkisiz işlem, token bulunamadı.' });
 };
 
 export const authorize = (...roles: UserRole[]) => {
