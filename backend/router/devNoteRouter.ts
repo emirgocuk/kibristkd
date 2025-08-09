@@ -7,6 +7,7 @@ import { UserRole } from '../entities/user.js';
 export const router = Router();
 const noteRepo = AppDataSource.getRepository(DevNote);
 
+// GET /api/devnotes
 router.get(
   '/',
   protect,
@@ -21,6 +22,7 @@ router.get(
   }
 );
 
+// POST /api/devnotes
 router.post(
   '/',
   protect,
