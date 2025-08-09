@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+// import dotenv from 'dotenv'; // This line would be removed if it existed
+// dotenv.config(); // This line would be removed if it existed
 import { UserRole } from '../entities/user.js';
 
 export const protect = (req: Request, res: Response, next: NextFunction) => {

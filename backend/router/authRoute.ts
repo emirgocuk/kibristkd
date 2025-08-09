@@ -1,80 +1,77 @@
-import { Router, Request, Response } from "express";
-import { AppDataSource } from "../server.js";
-import { User, UserRole } from "../entities/user.js";
+
+import { Router } from 'express';
+import { AppDataSource } from '../data-source.js';
+import { User, UserRole } from '../entities/user.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import { protect } from '../middleware/authMiddleware.js';
 
-dotenv.config();
+
 
 export const router = Router();
+const userRepository = AppDataSource.getRepository(User);
 
-// YENİ EKLENEN KULLANICI KAYIT ROTASI
-router.post("/register", async (req: Request, res: Response) => {
-    const { name, email, password } = req.body;
-    const userRepository = AppDataSource.getRepository(User);
-
-    if (!name || !email || !password) {
-        return res.status(400).json({ message: "Tüm alanlar (name, email, password) zorunludur." });
+// Kullanıcı Kayıt
+router.post('/register', async (req, res) => {
+    const { name, password, email } = req.body;
+    if (!name || !password || !email) {
+        return res.status(400).json({ message: 'Tüm alanlar gereklidir.' });
     }
 
     try {
-        // Kullanıcının zaten var olup olmadığını kontrol et
-        const existingUser = await userRepository.findOne({ where: { email } });
+        const existingUser = await userRepository.findOne({ where: [{ name }, { email }] });
         if (existingUser) {
-            return res.status(409).json({ message: "Bu e-posta adresi zaten kullanılıyor." });
+            return res.status(400).json({ message: 'Bu kullanıcı adı veya e-posta zaten kullanılıyor.' });
         }
 
-        // Şifreyi hash'le
         const hashedPassword = await bcrypt.hash(password, 10);
-
-        // Yeni kullanıcı oluştur
         const newUser = new User();
         newUser.name = name;
-        newUser.email = email;
         newUser.password = hashedPassword;
-        newUser.role = UserRole.ADMIN;
+        newUser.email = email;
+        newUser.role = UserRole.YAZAR;
 
         await userRepository.save(newUser);
-
-        res.status(201).json({ message: "Kullanıcı başarıyla oluşturuldu!", user: { id: newUser.id, name: newUser.name, email: newUser.email } });
-
+        res.status(201).json({ message: 'Kullanıcı başarıyla oluşturuldu.' });
     } catch (error) {
-        console.error("Kullanıcı oluşturulurken sunucu hatası:", error);
-        res.status(500).json({ message: "Sunucuda bir hata oluştu." });
+        res.status(500).json({ message: 'Sunucu hatası', error });
     }
 });
 
-// POST /api/login
-router.post("/login", async (req: Request, res: Response) => {
+// Kullanıcı Giriş
+router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-    const userRepository = AppDataSource.getRepository(User);
-
     if (!email || !password) {
-        return res.status(400).json({ message: "E-posta ve şifre alanları zorunludur." });
+        return res.status(400).json({ message: 'E-posta ve şifre gereklidir.' });
     }
 
     try {
         const user = await userRepository.findOne({ where: { email } });
         if (!user) {
-            return res.status(401).json({ message: "Geçersiz e-posta veya şifre." });
+            return res.status(401).json({ message: 'Geçersiz kimlik bilgileri.' });
         }
 
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: "Geçersiz e-posta veya şifre." });
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Geçersiz kimlik bilgileri.' });
         }
 
-        const token = jwt.sign(
-            { id: user.id, name: user.name, role: user.role },
-            process.env.JWT_SECRET || 'varsayilan_gizli_anahtar',
-            { expiresIn: '8h' }
-        );
+        const secretKey = process.env.JWT_SECRET;
+        if (!secretKey) {
+          throw new Error('JWT_SECRET ortam değişkeni tanımlanmamış!');
+        }
 
-        res.json({ message: "Giriş başarılı!", token });
+        const token = jwt.sign({ id: user.id, name: user.name, role: user.role }, secretKey, {
+            expiresIn: '1h',
+        });
 
+        res.json({ token });
     } catch (error) {
-        console.error("Giriş sırasında sunucu hatası:", error);
-        res.status(500).json({ message: "Sunucuda bir hata oluştu." });
+        res.status(500).json({ message: 'Sunucu hatası', error });
     }
+});
+
+// Mevcut Kullanıcı Bilgisini Getir
+router.get('/me', protect, (req, res) => {
+    res.json((req as any).user);
 });
