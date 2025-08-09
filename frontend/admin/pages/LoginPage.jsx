@@ -1,89 +1,48 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { TextField, Button, Container, Typography, Box } from '@mui/material';
-import axios from 'axios';
+import React, { useState } from 'react';
+import logo from '../../photos/logo.png';
 import { useNavigate } from 'react-router-dom';
+import { Container, Box, TextField, Button, Typography, Paper } from '@mui/material';
 
-const LoginPage = () => {
-	const { register, handleSubmit, formState: { errors } } = useForm();
-	const navigate = useNavigate();
-	const [loginError, setLoginError] = React.useState('');
+function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-	const onSubmit = async (data) => {
-		try {
-			setLoginError(''); // Hata mesajını temizle
-			// Backend'deki login endpoint'ine istek at
-			const response = await axios.post('/api/auth/login', data);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
 
-			// Backend'den token geldiyse...
-			if (response.data.token) {
-				// Token'ı tarayıcının hafızasına kaydet
-				localStorage.setItem('token', response.data.token);
-        
-				// Kullanıcıyı admin ana sayfasına yönlendir
-				navigate('/admin/dashboard'); 
-			}
-		} catch (error) {
-			console.error('Giriş hatası:', error);
-			setLoginError('E-posta veya şifre hatalı.');
-		}
-	};
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Bir hata oluştu.');
+      }
+      localStorage.setItem('token', data.token);
+      navigate('/girne'); 
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
-	return (
-		<Container component="main" maxWidth="xs">
-			<Box
-				sx={{
-					marginTop: 8,
-					display: 'flex',
-					flexDirection: 'column',
-					alignItems: 'center',
-				}}
-			>
-				<Typography component="h1" variant="h5">
-					Yönetici Girişi
-				</Typography>
-				<Box component="form" onSubmit={handleSubmit(onSubmit)} sx={{ mt: 1 }}>
-					<TextField
-						margin="normal"
-						required
-						fullWidth
-						id="email"
-						label="E-posta Adresi"
-						autoComplete="email"
-						autoFocus
-						{...register('email', { required: 'E-posta zorunludur' })}
-						error={!!errors.email}
-						helperText={errors.email?.message}
-					/>
-					<TextField
-						margin="normal"
-						required
-						fullWidth
-						label="Şifre"
-						type="password"
-						id="password"
-						autoComplete="current-password"
-						{...register('password', { required: 'Şifre zorunludur' })}
-						error={!!errors.password}
-						helperText={errors.password?.message}
-					/>
-					{loginError && (
-						<Typography color="error" variant="body2" sx={{ mt: 1 }}>
-							{loginError}
-						</Typography>
-					)}
-					<Button
-						type="submit"
-						fullWidth
-						variant="contained"
-						sx={{ mt: 3, mb: 2 }}
-					>
-						Giriş Yap
-					</Button>
-				</Box>
-			</Box>
-		</Container>
-	);
-};
-
+  return (
+    <Container component="main" maxWidth="xs">
+      <Paper elevation={3} sx={{ mt: 8, p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box component="img" sx={{ height: 60, mb: 2 }} alt="Logo" src={logo} />
+        <Typography component="h1" variant="h5">Yönetim Paneli Girişi</Typography>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField margin="normal" required fullWidth id="email" label="E-posta Adresi" name="email" autoComplete="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)} />
+          <TextField margin="normal" required fullWidth name="password" label="Şifre" type="password" id="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          {error && (<Typography color="error" variant="body2" align="center" sx={{ mt: 2 }}>{error}</Typography>)}
+          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>Giriş Yap</Button>
+        </Box>
+      </Paper>
+    </Container>
+  );
+}
 export default LoginPage;

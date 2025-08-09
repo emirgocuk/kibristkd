@@ -19,19 +19,7 @@ function CascadingMenuItem({ children, submenuItems, onSubMenuClick }) {
 
   return (
     <Box onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} sx={{ position: 'relative' }}>
-      <MenuItem
-        selected={Boolean(anchorEl)}
-        sx={{
-          ...menuItemSx,
-          justifyContent: 'space-between',
-          width: '100%',
-          '&:hover': {
-            backgroundColor: 'primary.main',
-            color: 'white',
-            transform: 'translateX(0)',
-          }
-        }}
-      >
+      <MenuItem selected={Boolean(anchorEl)} sx={{ ...menuItemSx, justifyContent: 'space-between', width: '100%', '&:hover': { backgroundColor: 'primary.main', color: 'white', transform: 'translateX(0)' } }}>
         {children}
         <span style={{ marginLeft: '16px' }}>&rsaquo;</span>
       </MenuItem>
@@ -44,21 +32,10 @@ function CascadingMenuItem({ children, submenuItems, onSubMenuClick }) {
         MenuListProps={{ onMouseLeave: handleMouseLeave }}
         TransitionComponent={Fade}
         transitionDuration={200}
-        PaperProps={{
-          sx: {
-            backgroundColor: 'white',
-            boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
-          }
-        }}
+        PaperProps={{ sx: { backgroundColor: 'white', boxShadow: '0px 4px 12px rgba(0,0,0,0.1)' } }}
       >
         {submenuItems.map((item) => (
-          <MenuItem
-            key={item.text}
-            component={Link}
-            to={item.path}
-            onClick={onSubMenuClick}
-            sx={menuItemSx}
-          >
+          <MenuItem key={item.text} component={Link} to={item.path} onClick={onSubMenuClick} sx={menuItemSx}>
             {item.text}
           </MenuItem>
         ))}
@@ -66,5 +43,4 @@ function CascadingMenuItem({ children, submenuItems, onSubMenuClick }) {
     </Box>
   );
 }
-
 export default CascadingMenuItem;

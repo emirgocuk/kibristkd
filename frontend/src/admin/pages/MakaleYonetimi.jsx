@@ -203,10 +203,6 @@ const MakaleYonetimi = () => {
 
 			{/* Onay Bekleyen Makaleler bileşenini burada çağırıyoruz */}
 			<OnayBekleyenMakaleler />
-
-			{/* Yeni eklenen ArticleList bileşeni */}
-			<Typography variant="h4" gutterBottom>Makale Yönetimi</Typography>
-			<Typography variant="body1">Yazarlar tarafından gönderilen ve onay bekleyen makaleler bu bölümde listelenecektir.</Typography>
 		</Box>
 	);
 };
