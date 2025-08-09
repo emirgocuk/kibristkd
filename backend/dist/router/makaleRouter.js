@@ -3,15 +3,21 @@ import { AppDataSource } from '../data-source.js';
 import { Makale, MakaleStatus } from '../entities/Makale.js';
 import { User, UserRole } from '../entities/user.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { Setting } from '../entities/Setting.js';
 export const router = Router();
 const makaleRepository = AppDataSource.getRepository(Makale);
 const userRepository = AppDataSource.getRepository(User);
+const settingRepository = AppDataSource.getRepository(Setting);
 // --- YENİ MAKALE OLUŞTURMA ---
 // Sadece giriş yapmış kullanıcılar (yazarlar veya adminler) yeni makale oluşturabilir.
 // Oluşturulan her yeni makalenin statüsü varsayılan olarak "pending" (onay bekliyor) olur.
 router.post('/', protect, async (req, res) => {
     const { title, content } = req.body;
     const userId = req.user?.id;
+    const setting = await settingRepository.findOne({ where: { id: 1 } });
+    if (setting && !setting.allowAppPublishing) {
+        return res.status(403).json({ message: 'Makale yayınlama şu anda devre dışı.' });
+    }
     if (!title || !content) {
         return res.status(400).json({ message: 'Başlık ve içerik alanları zorunludur.' });
     }

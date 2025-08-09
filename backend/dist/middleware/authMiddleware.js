@@ -1,21 +1,24 @@
 import jwt from 'jsonwebtoken';
 export const protect = (req, res, next) => {
-    let token;
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
         try {
-            token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'varsayilan_gizli_anahtar');
+            const secret = process.env.JWT_SECRET;
+            if (!secret) {
+                console.error('JWT_SECRET is not defined');
+                return res.status(500).json({ message: 'Sunucu yapılandırma hatası.' });
+            }
+            const decoded = jwt.verify(token, secret);
             req.user = decoded;
-            next();
+            return next();
         }
         catch (error) {
             console.error('Token doğrulama hatası', error);
-            res.status(401).json({ message: 'Yetkisiz işlem, token geçersiz.' });
+            return res.status(401).json({ message: 'Yetkisiz işlem, token geçersiz.' });
         }
     }
-    if (!token) {
-        res.status(401).json({ message: 'Yetkisiz işlem, token bulunamadı.' });
-    }
+    return res.status(401).json({ message: 'Yetkisiz işlem, token bulunamadı.' });
 };
 export const authorize = (...roles) => {
     return (req, res, next) => {
