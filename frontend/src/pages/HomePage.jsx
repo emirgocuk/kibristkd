@@ -6,7 +6,6 @@ import HeroSlider from '@/components/HeroSlider';
 import MainContentSlider from '@/components/MainContentSlider';
 import Sidebar from '@/components/Sidebar';
 import SectionTitle from '@/components/SectionTitle';
-import HaberKarti from '@/components/HaberKarti';
 
 const HomePage = () => {
     const [makaleler, setMakaleler] = useState([]);
@@ -32,29 +31,16 @@ const HomePage = () => {
     return (
         <Box>
             <HeroSlider />
-            <Container maxWidth="lg" sx={{ mt: 4 }}>
+            <Container maxWidth="lg" sx={{ my: 4 }}>
                 <Grid container spacing={4}>
                     <Grid item xs={12} md={8}>
-                        <MainContentSlider />
-                        <SectionTitle>Haberler & Makaleler</SectionTitle>
-
+                        <SectionTitle>Öne Çıkan Haberler</SectionTitle>
+                        
                         {loading && <p>Yükleniyor...</p>}
                         {error && <p style={{ color: 'red' }}>{error}</p>}
                         
-                        {!loading && !error && (
-                            <Grid container spacing={2}>
-                                {makaleler.map((makale) => (
-                                    <Grid item xs={12} sm={6} key={makale.id}>
-                                        <HaberKarti 
-                                            id={makale.id}
-                                            title={makale.title}
-                                            date={new Date(makale.createdAt).toLocaleDateString('tr-TR')}
-                                            summary={makale.content.substring(0, 100) + '...'}
-                                        />
-                                    </Grid>
-                                ))}
-                            </Grid>
-                        )}
+                        {!loading && !error && <MainContentSlider makaleler={makaleler} />}
+
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <Sidebar />
