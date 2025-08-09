@@ -7,14 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-// ...existing code...
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from "typeorm";
-export var UserRole;
-(function (UserRole) {
-    UserRole["SUPERADMIN"] = "superadmin";
-    UserRole["ADMIN"] = "admin";
-    UserRole["YAZAR"] = "yazar";
-})(UserRole || (UserRole = {}));
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 let User = class User {
 };
 __decorate([
@@ -22,7 +15,7 @@ __decorate([
     __metadata("design:type", Number)
 ], User.prototype, "id", void 0);
 __decorate([
-    Column(),
+    Column({ length: 100 }),
     __metadata("design:type", String)
 ], User.prototype, "name", void 0);
 __decorate([
@@ -34,17 +27,9 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
-    Column({
-        type: "enum",
-        enum: UserRole,
-        default: UserRole.YAZAR
-    }),
+    Column({ default: "user" }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
-__decorate([
-    OneToMany('Makale', (makale) => makale.author),
-    __metadata("design:type", Array)
-], User.prototype, "makaleler", void 0);
 __decorate([
     CreateDateColumn(),
     __metadata("design:type", Date)
