@@ -5,6 +5,7 @@ import { router as authRouter } from './router/authRoute.js';
 import { router as yazarRouter } from './router/yazarRouter.js';
 import { router as makaleRouter } from './router/makaleRouter.js';
 import { router as settingsRouter } from './router/settingsRouter.js';
+import { router as devNoteRouter } from './router/devNoteRouter.js';
 
 AppDataSource.initialize()
     .then(() => {
@@ -16,6 +17,7 @@ AppDataSource.initialize()
         app.use('/api/auth', authRouter);
         app.use('/api/yazarlar', yazarRouter);
         app.use('/api/makaleler', makaleRouter);
+        app.use('/api/dev-notes', devNoteRouter);
         app.use('/api/settings', settingsRouter);
 
         const port = process.env.PORT || 5000;
