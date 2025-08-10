@@ -1,4 +1,4 @@
-import type { Express } from "express";
+
 import { Router } from "express";
 import multer from "multer";
 import { AppDataSource } from "../data-source.js";

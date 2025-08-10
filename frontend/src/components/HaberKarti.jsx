@@ -7,11 +7,11 @@ import {
 
 export default function HaberKarti({ haber, featured = false }) {
   if (!haber) return null;
-
+  console.log(haber)
   const title =
     haber.baslik || haber.title || "Başlık";
-  const img =
-    haber.kapakResmi || haber.image || "/placeholder.jpg";
+  // const img =
+  // `http://localhost:5000/api/makaleler/${haber.id}/kapak` || "/placeholder.jpg";
   const raw =
     (haber.icerik || haber.content || haber.body || "").toString();
   const text = raw.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
@@ -25,18 +25,7 @@ export default function HaberKarti({ haber, featured = false }) {
   return (
     <Card variant="outlined" sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <CardActionArea component={RouterLink} to={to} sx={{ alignItems: "stretch" }}>
-        {img && (
-          <CardMedia
-            component="img"
-            image={img}
-            alt={title}
-            sx={{
-              height: featured ? 260 : 160,
-              objectFit: "cover"
-            }}
-            onError={(e) => { e.currentTarget.src = "/placeholder.jpg"; }}
-          />
-        )}
+
         <CardContent>
           <Typography variant={featured ? "h6" : "subtitle1"} fontWeight={700} gutterBottom>
             {title}
