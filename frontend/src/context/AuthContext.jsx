@@ -1,49 +1,42 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import axios from "axios";
+import React, { createContext, useContext, useState } from 'react';
+import http, { setAuthToken } from '../api/http';
 
-const AuthCtx = createContext(null);
-
-function setToken(t) { if (t) localStorage.setItem("token", t); else localStorage.removeItem("token"); }
-function getToken() { return localStorage.getItem("token"); }
-
-// Tüm isteklerde token header'ı otomatik eklensin
-axios.interceptors.request.use((cfg) => {
-  const t = getToken();
-  if (t) cfg.headers.Authorization = `Bearer ${t}`;
-  return cfg;
-});
+const Ctx = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const t = getToken();
-      if (!t) { setLoading(false); return; }
-      try {
-        const r = await axios.get("/api/auth/me");
-        const me = r?.data?.data ?? r?.data?.user ?? null;
-        setUser(me);
-      } catch {
-        setToken(null); setUser(null);
-      } finally { setLoading(false); }
-    })();
-  }, []);
-
-  // login user'ı döndürsün ki GirneLogin anında yönlendirsin
   const login = async (email, password) => {
-    const r = await axios.post("/api/auth/login", { email, password });
-    const payload = r?.data?.data ?? r?.data; // { token, user }
-    const token = payload?.token;
-    const safeUser = payload?.user;
-    if (!token || !safeUser) throw new Error("Sunucudan beklenen yanıt gelmedi");
-    setToken(token); setUser(safeUser);
-    return safeUser;
+    setLoading(true);
+    try {
+      const { data } = await http.post('/api/auth/login', { email, password });
+      if (data?.success) {
+        setToken(data.data.token);
+        setAuthToken(data.data.token);
+        setUser(data.data.user);
+        return { ok: true };
+      }
+      return { ok: false, message: data?.message || 'Giriş başarısız' };
+    } catch (e) {
+      return { ok: false, message: e?.response?.data?.message || 'Giriş başarısız' };
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const logout = () => { setToken(null); setUser(null); };
+  const logout = () => {
+    setToken('');
+    setAuthToken(null);
+    setUser(null);
+  };
 
-  return <AuthCtx.Provider value={{ user, loading, login, logout }}>{children}</AuthCtx.Provider>;
+  return (
+    <Ctx.Provider value={{ user, token, loading, login, logout }}>
+      {children}
+    </Ctx.Provider>
+  );
 }
-export const useAuth = () => useContext(AuthCtx);
+
+export const useAuth = () => useContext(Ctx);

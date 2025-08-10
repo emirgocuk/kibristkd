@@ -7,17 +7,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 let User = class User {
+    id;
+    email;
+    name;
+    password; // bcrypt hash saklanır
+    role;
 };
 __decorate([
     PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], User.prototype, "id", void 0);
-__decorate([
-    Column({ length: 100 }),
-    __metadata("design:type", String)
-], User.prototype, "name", void 0);
 __decorate([
     Column({ unique: true }),
     __metadata("design:type", String)
@@ -25,20 +26,17 @@ __decorate([
 __decorate([
     Column(),
     __metadata("design:type", String)
+], User.prototype, "name", void 0);
+__decorate([
+    Column(),
+    __metadata("design:type", String)
 ], User.prototype, "password", void 0);
 __decorate([
-    Column({ default: "user" }),
+    Column({ default: "admin" }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);
-__decorate([
-    CreateDateColumn(),
-    __metadata("design:type", Date)
-], User.prototype, "createdAt", void 0);
-__decorate([
-    UpdateDateColumn(),
-    __metadata("design:type", Date)
-], User.prototype, "updatedAt", void 0);
 User = __decorate([
     Entity()
 ], User);
 export { User };
+//# sourceMappingURL=User.js.map

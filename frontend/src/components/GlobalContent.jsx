@@ -1,33 +1,24 @@
-import { useEffect, useState } from 'react';
-import { Box, Container } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import http, { unwrap } from '../api/http';
 
-const GlobalContent = () => {
-  const [content, setContent] = useState('');
-  const [error, setError] = useState(false);
+export default function GlobalContent() {
+  const [content, setContent] = useState(null);
 
   useEffect(() => {
-    const fetchContent = async () => {
+    let mounted = true;
+    (async () => {
       try {
-        const r = await http.get('/api/settings/content');
-        const data = unwrap(r, {});
-        setContent(data.globalContent || '');
-      } catch (err) {
-        console.error(err);
-        setError(true);
-        setContent('');
+        const data = await unwrap(http.get('/api/settings/content'));
+        if (mounted) setContent(data);
+      } catch {
+        // sessizce geç; stub yoksa bile sayfa çökmemeli
+        if (mounted) setContent(null);
       }
-    };
-    fetchContent();
+    })();
+    return () => { mounted = false; };
   }, []);
 
-  if (error || !content) return null;
-
-  return (
-    <Box sx={{ bgcolor: 'secondary.main', color: 'secondary.contrastText', py: 2 }}>
-      <Container dangerouslySetInnerHTML={{ __html: content }} />
-    </Box>
-  );
-};
-
-export default GlobalContent;
+  // Bu komponent global metin/banner gibi şeyleri yüklemek için kullanılacak.
+  // Şimdilik görünür bir şey render etmiyoruz.
+  return null;
+}

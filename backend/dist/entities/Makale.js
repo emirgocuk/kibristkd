@@ -7,33 +7,53 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn, RelationId } from "typeorm";
+import { User } from "./User.js";
 let Makale = class Makale {
+    id;
+    baslik;
+    icerik;
+    kategori;
+    kapakResmi;
+    status;
+    createdBy;
+    createdById;
+    createdAt;
+    updatedAt;
 };
 __decorate([
     PrimaryGeneratedColumn(),
     __metadata("design:type", Number)
 ], Makale.prototype, "id", void 0);
 __decorate([
-    Column({ length: 255 }),
+    Column({ type: "varchar", length: 255 }),
     __metadata("design:type", String)
 ], Makale.prototype, "baslik", void 0);
 __decorate([
-    Column("text"),
+    Column({ type: "longtext" }),
     __metadata("design:type", String)
 ], Makale.prototype, "icerik", void 0);
 __decorate([
-    Column({ length: 100 }),
-    __metadata("design:type", String)
+    Column({ type: "varchar", length: 191, nullable: true, default: null }),
+    __metadata("design:type", Object)
 ], Makale.prototype, "kategori", void 0);
 __decorate([
-    Column({ type: "datetime" }),
-    __metadata("design:type", Date)
-], Makale.prototype, "tarih", void 0);
-__decorate([
-    Column({ nullable: true }),
-    __metadata("design:type", String)
+    Column({ type: "varchar", length: 1024, nullable: true, default: null }),
+    __metadata("design:type", Object)
 ], Makale.prototype, "kapakResmi", void 0);
+__decorate([
+    Column({ type: "enum", enum: ["draft", "pending", "published"], default: "pending" }),
+    __metadata("design:type", String)
+], Makale.prototype, "status", void 0);
+__decorate([
+    ManyToOne(() => User, { eager: true, onDelete: "SET NULL" }),
+    JoinColumn({ name: "createdById" }),
+    __metadata("design:type", Object)
+], Makale.prototype, "createdBy", void 0);
+__decorate([
+    RelationId((m) => m.createdBy),
+    __metadata("design:type", Object)
+], Makale.prototype, "createdById", void 0);
 __decorate([
     CreateDateColumn(),
     __metadata("design:type", Date)
@@ -46,3 +66,4 @@ Makale = __decorate([
     Entity()
 ], Makale);
 export { Makale };
+//# sourceMappingURL=Makale.js.map

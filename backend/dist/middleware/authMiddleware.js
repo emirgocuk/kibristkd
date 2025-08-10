@@ -3,30 +3,26 @@ import { AppDataSource } from "../data-source.js";
 import { User } from "../entities/User.js";
 export const requireAuth = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        const header = req.headers.authorization || "";
+        const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+        if (!token)
             return res.status(401).json({ success: false, message: "Token bulunamadı" });
-        }
-        const token = authHeader.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const userRepo = AppDataSource.getRepository(User);
-        const user = await userRepo.findOneBy({ id: decoded.id });
-        if (!user) {
-            return res.status(401).json({ success: false, message: "Kullanıcı bulunamadı" });
-        }
+        const payload = jwt.verify(token, process.env.JWT_SECRET || "secret");
+        const repo = AppDataSource.getRepository(User);
+        const user = await repo.findOne({ where: { id: payload.id } });
+        if (!user)
+            return res.status(401).json({ success: false, message: "Geçersiz token" });
         req.user = user;
         next();
     }
-    catch (err) {
-        if (err?.name === "TokenExpiredError") {
-            return res.status(401).json({ success: false, message: "Oturum süresi doldu" });
-        }
-        return res.status(401).json({ success: false, message: "Token geçersiz" });
+    catch {
+        return res.status(401).json({ success: false, message: "Yetkisiz" });
     }
 };
 export const requireAdmin = (req, res, next) => {
-    if (!req.user || req.user.role !== "admin") {
-        return res.status(403).json({ success: false, message: "Admin yetkisi gerekli" });
+    if ((req.user?.role || "").toLowerCase() !== "admin") {
+        return res.status(403).json({ success: false, message: "Yetkiniz yok" });
     }
     next();
 };
+//# sourceMappingURL=authMiddleware.js.map

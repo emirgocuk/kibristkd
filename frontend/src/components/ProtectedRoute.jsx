@@ -1,28 +1,19 @@
-import React from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import React from 'react';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProtectedRoute({ requireAdmin = true }) {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
 
-  if (loading) return null;
-  if (location.pathname === "/girne") return <Outlet />;
+  // login sayfasını asla engelleme
+  if (location.pathname === '/girne') return <Outlet />;
 
   if (!user) {
-    if (location.pathname !== "/girne") {
-      return <Navigate to="/girne" replace state={{ reason: "auth", from: location.pathname }} />;
-    }
-    return <Outlet />;
+    return <Navigate to="/girne" replace state={{ from: location.pathname }} />;
   }
-
-  const role = (user.role || "").toLowerCase();
-  if (requireAdmin && role !== "admin") {
-    if (location.pathname !== "/girne") {
-      return <Navigate to="/girne" replace state={{ reason: "denied", from: location.pathname }} />;
-    }
-    return <Outlet />;
+  if (requireAdmin && user.role !== 'admin') {
+    return <Navigate to="/girne" replace state={{ denied: true }} />;
   }
-
   return <Outlet />;
 }
