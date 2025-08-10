@@ -38,20 +38,6 @@ const SkeletonCard = ({ lines = 2 }) => (
   </Box>
 );
 
-const AdBox = ({ height = 250 }) => (
-  <Paper variant="outlined" sx={{ p: 1.5, mb: 3 }}>
-    <Box sx={{
-      height, borderRadius: 1, border: '1px dashed', borderColor: 'divider',
-      display: 'grid', placeItems: 'center', textAlign: 'center', px: 2
-    }}>
-      <Typography variant="caption" color="text.secondary">
-        The image you are<br/>requesting does not exist<br/>or is no longer available.
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>imgur.com</Typography>
-    </Box>
-  </Paper>
-);
-
 export default function HomePage() {
   const [makaleler, setMakaleler] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -132,19 +118,6 @@ export default function HomePage() {
     { title: 'Kıbrıs Türk Kültürü', key: 'Kıbrıs Türk Kültürü', take: 4, style: 'grid4' },
   ];
 
-  const duyurular = [
-    { id: 1, title: 'Akredite Üyelik', date: '12 Ağu 2025' },
-    { id: 2, title: 'Gece Yarısı Gündemi', date: '09 Ağu 2025' },
-  ];
-  const yazarlar = [
-    { id: 1, name: 'İsmail Berkut' },
-    { id: 2, name: 'Bahar İnceal' },
-    { id: 3, name: 'Prof. Dr. Ata Asun' },
-    { id: 4, name: 'Atila Cilingir' },
-    { id: 5, name: 'Ahmet Göksun' },
-    { id: 6, name: 'Hüseyin Laplan' },
-  ];
-
   const clearAll = () => { setRawQuery(''); setQuery(''); setSort('newest'); setVisibleCount(PAGE_SIZE); };
 
   const bannerImg = '/slide1.jpg';
@@ -182,36 +155,7 @@ export default function HomePage() {
           {/* sol sütun */}
           <Grid item xs={12} md={8}>
             {/* arama/sırala */}
-            <Box sx={{
-              mb: 2, p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider',
-              bgcolor: (t) => t.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : '#fff',
-            }}>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="space-between">
-                <SectionTitle title="Haberler & Makaleler" />
-                <Stack direction="row" spacing={2} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' } }}>
-                  <TextField
-                    fullWidth placeholder="Ara (başlık / içerik / etiket)…" size="small"
-                    value={rawQuery} onChange={(e) => setRawQuery(e.target.value)}
-                    InputProps={{
-                      startAdornment: (<InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>),
-                      endAdornment: rawQuery && (
-                        <InputAdornment position="end">
-                          <IconButton size="small" onClick={() => setRawQuery('')}><CloseRoundedIcon /></IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                  <FormControl size="small" sx={{ minWidth: 150 }}>
-                    <InputLabel id="sort-label">Sırala</InputLabel>
-                    <Select labelId="sort-label" label="Sırala" value={sort} onChange={(e) => setSort(e.target.value)}>
-                      <MenuItem value="newest">En Yeni</MenuItem>
-                      <MenuItem value="oldest">En Eski</MenuItem>
-                    </Select>
-                  </FormControl>
-                  <Button onClick={clearAll}>Temizle</Button>
-                </Stack>
-              </Stack>
-            </Box>
+          
 
             {/* liste */}
             {loading ? (
@@ -376,32 +320,6 @@ export default function HomePage() {
           <Grid item xs={12} md={4}>
             <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
               <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-                <RibbonTitle>Duyurular</RibbonTitle>
-                <List dense disablePadding>
-                  {duyurular.map((d) => (
-                    <ListItem key={d.id} sx={{ px: 0 }}>
-                      <ListItemText primary={d.title} secondary={d.date} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-
-              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-                <RibbonTitle>Köşe Yazarları</RibbonTitle>
-                <List dense disablePadding>
-                  {yazarlar.map((y) => (
-                    <ListItem key={y.id} sx={{ px: 0 }}>
-                      <ListItemAvatar><Avatar>{y.name.split(' ').map(s => s[0]).join('').slice(0,2)}</Avatar></ListItemAvatar>
-                      <ListItemText primary={y.name} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-
-              <AdBox height={250} />
-              <AdBox height={90} />
-
-              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
                 <RibbonTitle>Kitap Tanıtımı</RibbonTitle>
                 <Box sx={{
                   borderRadius: 1, overflow: 'hidden', height: 160,
@@ -413,9 +331,6 @@ export default function HomePage() {
                   <Chip label="Tarih" size="small" /><Chip label="Kültür" size="small" />
                 </Stack>
               </Paper>
-
-              <AdBox height={250} />
-
               <Sidebar />
             </Box>
           </Grid>
