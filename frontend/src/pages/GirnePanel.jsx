@@ -216,8 +216,9 @@ export default function GirnePanel() {
 
   // -------- logout
   const handleLogout = async () => {
-    try { if (logout) await logout(); } catch {}
-    try { localStorage.removeItem("token"); } catch {}
+    if (logout) {
+      await logout();
+    }
     window.location.href = "/girne";
   };
 
@@ -332,7 +333,7 @@ export default function GirnePanel() {
           [`& .MuiDrawer-paper`]: {
             width: DRAWER_WIDTH,
             boxSizing: 'border-box',
-            display: 'flex',
+            display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
             height: `calc(100vh - ${APPBAR_HEIGHT}px)`,
             top: APPBAR_HEIGHT,
