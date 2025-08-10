@@ -4,19 +4,19 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import theme from '../theme.js';
+import theme from '../theme';
 import './index.css';
 
-import App from './App.jsx';
-import HomePage from './pages/HomePage.jsx';
-import TarihcePage from './pages/TarihcePage.jsx';
-import YonetimKuruluPage from './pages/YonetimKuruluPage.jsx';
-import HaberDetayPage from './pages/HaberDetayPage.jsx';
-import PlaceholderPage from './pages/PlaceholderPage.jsx';
+import App from './App';
+import HomePage from './pages/HomePage';
+import TarihcePage from './pages/TarihcePage';
+import YonetimKuruluPage from './pages/YonetimKuruluPage';
+import HaberDetayPage from './pages/HaberDetayPage';
+import PlaceholderPage from './pages/PlaceholderPage';
 
-import GirneLogin from './pages/GirneLogin.jsx';
-import GirnePanel from './pages/GirnePanel.jsx';
-import ProtectedRoute from './components/ProtectedRoute.jsx';
+import GirneLogin from './pages/GirneLogin';
+import GirnePanel from './pages/GirnePanel';
+import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(

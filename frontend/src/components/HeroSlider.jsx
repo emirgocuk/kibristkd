@@ -6,10 +6,10 @@ import 'swiper/css/navigation';
 import 'swiper/css/effect-fade';
 import { Box, Typography, GlobalStyles } from '@mui/material';
 
-import slideImage1 from '../../photos/slide1.jpg';
-import slideImage2 from '../../photos/slide2.jpg';
-import slideImage3 from '../../photos/slide3.jpg';
-import slideImage4 from '../../photos/slide4.jpg';
+import slideImage1 from '../photos/slide1.jpg';
+import slideImage2 from '../photos/slide2.jpg';
+import slideImage3 from '../photos/slide3.jpg';
+import slideImage4 from '../photos/slide4.jpg';
 
 const sliderData = [
   { image: slideImage1, title: 'KIBRIS', subtitle: 'TÜRK KÜLTÜR DERNEĞİ' },

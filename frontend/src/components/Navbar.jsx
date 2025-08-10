@@ -6,7 +6,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
 // DÜZELTME: Logo yolunu, daha önce çalıştığını teyit ettiğimiz yolla güncelledim.
-import logo from '../../photos/logo.png';
+import logo from '../photos/logo.png';
 
 // Menü verileri (Sizin sağladığınız eksiksiz listeler)
 const kurumsalItems = [

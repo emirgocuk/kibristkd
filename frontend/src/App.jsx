@@ -4,7 +4,7 @@ import { Box, Fab, Fade, useScrollTrigger, Container, Typography } from '@mui/ma
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import GlobalContent from './components/GlobalContent.jsx';
+import GlobalContent from './components/GlobalContent';
 
 function ScrollTop({ children }) {
   const trigger = useScrollTrigger({ disableHysteresis: true, threshold: 100 });

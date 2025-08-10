@@ -8,7 +8,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 
-import logo from '../../photos/logo.png';
+import logo from '../photos/logo.png';
 
 const FooterTitle = ({ children }) => (
   <Typography variant="h6" component="h3" sx={{ fontWeight: 'bold', mb: 2, pb: 1, borderBottom: '2px solid', borderColor: 'primary.main' }}>
