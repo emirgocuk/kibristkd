@@ -1,247 +1,494 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+// frontend/src/pages/GirnePanel.jsx
+import React, { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import http from "../api/http";
-import { useLocation, useNavigate } from "react-router-dom";
+
 import {
-  Container, Grid, Paper, Stack, TextField, Button, Typography, Divider,
-  List, ListItem, ListItemText, IconButton, Snackbar, Alert, Chip
+  AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItemButton,
+  ListItemText, Box, Container, Paper, Stack, TextField, Button, Divider,
+  Chip, MenuItem, Snackbar, Alert, ListItemIcon, FormControlLabel, Switch
 } from "@mui/material";
+
+import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
+import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
+import SlideshowRoundedIcon from "@mui/icons-material/SlideshowRounded";
+import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import PublishRoundedIcon from "@mui/icons-material/PublishRounded";
 import UnpublishedRoundedIcon from "@mui/icons-material/UnpublishedRounded";
 import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
-import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
+
+const DRAWER_WIDTH = 260;
+const APPBAR_HEIGHT = 64;
+
+function Section({ children }) {
+  return <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>{children}</Paper>;
+}
 
 export default function GirnePanel() {
-  // Toast
+  const { user, logout } = useAuth?.() || { user: null, logout: null };
+
+  // sol menü seçimi
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [section, setSection] = useState("posts"); // "posts" | "slider" | "authors"
+
+  // bildirim
   const [toast, setToast] = useState({ open: false, msg: "", type: "success" });
+  const ok = (m, t = "success") => setToast({ open: true, msg: m, type: t });
 
-  // Router
-  const location = useLocation();
-  const navigate = useNavigate();
+  // ----- ortak veriler
+  const [authors, setAuthors] = useState([]);
 
-  // Form state
-  const [baslik, setBaslik] = useState("");
-  const [icerik, setIcerik] = useState("");
-  const [kategori, setKategori] = useState("");
-  const [file, setFile] = useState(null);
+  // ----- Makaleler
+  const [posts, setPosts] = useState([]);
+  const [loadingPosts, setLoadingPosts] = useState(true);
+  const [pTitle, setPTitle] = useState("");
+  const [pBody, setPBody] = useState("");
+  const [pCat, setPCat] = useState("");
+  const [pAuthorId, setPAuthorId] = useState("");
+  const [pFile, setPFile] = useState(null);
 
-  // Liste
-  const [list, setList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const published = useMemo(() => posts.filter(p => p.status === "published"), [posts]);
+  const pending   = useMemo(() => posts.filter(p => p.status === "pending"), [posts]);
+  const drafts    = useMemo(() => posts.filter(p => p.status === "draft"), [posts]);
 
-  // İlk gelişte “başarıyla giriş yaptınız” bildirimi
-  useEffect(() => {
-    if (location.state?.justLoggedIn) {
-      setToast({ open: true, msg: "Başarıyla giriş yaptınız. Hoş geldiniz!", type: "success" });
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location, navigate]);
+  // ----- Slider
+  const [slides, setSlides] = useState([]);
+  const [sTitle, setSTitle] = useState("");
+  const [sSubtitle, setSSubtitle] = useState("");
+  const [sHref, setSHref] = useState("");
+  const [sSort, setSSort] = useState(0);
+  const [sActive, setSActive] = useState(true);
+  const [sFile, setSFile] = useState(null);
 
-  async function loadAdmin() {
+  // ----- Yazarlar
+  const [aName, setAName] = useState("");
+  const [aBio, setABio] = useState("");
+  const [aTwitter, setATwitter] = useState("");
+  const [aInsta, setAInsta] = useState("");
+  const [aWeb, setAWeb] = useState("");
+  const [aFile, setAFile] = useState(null);
+
+  // --- Label (InputLabel) rengi: varsayılan siyah, focus'ta kırmızı
+  const labelProps = { sx: { color: 'text.primary', '&.Mui-focused': { color: 'error.main' } } };
+
+  // -------- loaders
+  async function loadAuthors() {
+    const res = await http.get("/authors/admin");
+    setAuthors(res.data?.data ?? []);
+  }
+  async function loadPosts() {
     try {
-      setLoading(true);
+      setLoadingPosts(true);
       const res = await http.get("/makaleler/admin");
-      setList(res?.data?.data || []);
-    } catch (e) {
-      console.error(e);
-      setToast({ open: true, msg: "Liste yüklenemedi (401?)", type: "error" });
+      setPosts(res.data?.data ?? []);
     } finally {
-      setLoading(false);
+      setLoadingPosts(false);
     }
+  }
+  async function loadSlides() {
+    const res = await http.get("/slider/admin");
+    setSlides(res.data?.data ?? []);
   }
 
   useEffect(() => {
-    loadAdmin();
+    loadAuthors();
+    loadPosts();
+    loadSlides();
   }, []);
 
-  async function submit(e) {
+  // -------- Makale actions
+  async function createPost(e) {
     e.preventDefault();
-    try {
-      if (!baslik.trim() || !icerik.trim()) {
-        setToast({ open: true, msg: "Başlık ve içerik zorunludur", type: "warning" });
-        return;
+    if (!pTitle.trim() || !pBody.trim()) return ok("Başlık ve içerik zorunlu", "warning");
+
+    const created = (await http.post("/makaleler", {
+      baslik: pTitle.trim(),
+      icerik: pBody.trim(),
+      kategori: pCat.trim() || null,
+      authorId: pAuthorId ? Number(pAuthorId) : null
+    })).data?.data;
+
+    if (pFile && created?.id) {
+      const fd = new FormData();
+      fd.append("file", pFile);
+      await http.post(`/makaleler/${created.id}/kapak`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+    }
+
+    ok("Makale eklendi");
+    setPTitle(""); setPBody(""); setPCat(""); setPAuthorId(""); setPFile(null);
+    await loadPosts();
+  }
+  const publishPost = async (id) => { await http.post(`/makaleler/${id}/publish`); ok("Yayımlandı"); loadPosts(); };
+  const draftPost   = async (id) => { await http.post(`/makaleler/${id}/draft`);   ok("Taslağa alındı","info"); loadPosts(); };
+  const deletePost  = async (id) => { await http.delete(`/makaleler/${id}`);       ok("Silindi","warning"); loadPosts(); };
+
+  // -------- Slider actions
+  async function createSlide(e) {
+    e.preventDefault();
+    if (!sTitle.trim()) return ok("Başlık zorunlu", "warning");
+
+    const created = (await http.post("/slider", {
+      title: sTitle.trim(),
+      subtitle: sSubtitle.trim() || null,
+      linkHref: sHref.trim() || null,
+      sort: Number(sSort) || 0,
+      active: !!sActive
+    })).data?.data;
+
+    if (sFile && created?.id) {
+      const fd = new FormData();
+      fd.append("file", sFile);
+      await http.post(`/slider/${created.id}/image`, fd, { headers: { "Content-Type": "multipart/form-data" } });
+    }
+
+    ok("Slider kaydı eklendi");
+    setSTitle(""); setSSubtitle(""); setSHref(""); setSSort(0); setSActive(true); setSFile(null);
+    await loadSlides();
+  }
+  const toggleSlide = async (s) => { await http.put(`/slider/${s.id}`, { active: !s.active }); loadSlides(); };
+  const deleteSlide = async (id) => { await http.delete(`/slider/${id}`); ok("Silindi","warning"); loadSlides(); };
+
+  // -------- Author actions
+  async function createAuthor(e) {
+    e.preventDefault();
+    if (!aName.trim()) return ok("İsim zorunlu", "warning");
+
+    const created = (await http.post("/authors", {
+      name: aName.trim(),
+      bio: aBio.trim() || null,
+      socials: {
+        twitter: aTwitter.trim() || undefined,
+        instagram: aInsta.trim() || undefined,
+        website: aWeb.trim() || undefined,
       }
-      // 1) Makale oluştur
-      const body = {
-        baslik: baslik.trim(),
-        icerik: icerik.trim(),
-        kategori: kategori.trim() || null,
-      };
-      const res = await http.post("/makaleler", body);
-      const created = res?.data?.data;
+    })).data?.data;
 
-      // 2) Kapak varsa yükle
-      if (created?.id && file) {
-        const fd = new FormData();
-        fd.append("file", file);
-        await http.post(`/makaleler/${created.id}/kapak`, fd, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }
-
-      setToast({ open: true, msg: "Makale eklendi", type: "success" });
-      setBaslik(""); setIcerik(""); setKategori(""); setFile(null);
-      await loadAdmin();
-    } catch (e) {
-      console.error(e);
-      setToast({ open: true, msg: "Ekleme başarısız", type: "error" });
+    if (aFile && created?.id) {
+      const fd = new FormData();
+      fd.append("file", aFile);
+      await http.post(`/authors/${created.id}/avatar`, fd, { headers: { "Content-Type": "multipart/form-data" } });
     }
-  }
 
-  async function publish(id) {
-    try {
-      await http.post(`/makaleler/${id}/publish`);
-      setToast({ open: true, msg: "Yayımlandı", type: "success" });
-      await loadAdmin();
-    } catch (e) {
-      console.error(e);
-      setToast({ open: true, msg: "Yayımlama başarısız", type: "error" });
-    }
+    ok("Yazar eklendi");
+    setAName(""); setABio(""); setATwitter(""); setAInsta(""); setAWeb(""); setAFile(null);
+    await loadAuthors();
   }
+  const deleteAuthor = async (id) => { await http.delete(`/authors/${id}`); ok("Yazar silindi","warning"); loadAuthors(); };
 
-  async function draft(id) {
-    try {
-      await http.post(`/makaleler/${id}/draft`);
-      setToast({ open: true, msg: "Taslağa alındı", type: "info" });
-      await loadAdmin();
-    } catch (e) {
-      console.error(e);
-      setToast({ open: true, msg: "İşlem başarısız", type: "error" });
-    }
-  }
+  // -------- logout
+  const handleLogout = async () => {
+    try { if (logout) await logout(); } catch {}
+    try { localStorage.removeItem("token"); } catch {}
+    window.location.href = "/girne";
+  };
 
-  async function remove(id) {
-    try {
-      await http.delete(`/makaleler/${id}`);
-      setToast({ open: true, msg: "Silindi", type: "warning" });
-      await loadAdmin();
-    } catch (e) {
-      console.error(e);
-      setToast({ open: true, msg: "Silme başarısız", type: "error" });
-    }
-  }
+  // -------------------- Sol çekmece içeriği --------------------
+  const drawer = (
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* scroll edilebilir kısım */}
+      <Box sx={{ flex: 1, overflowY: "auto" }}>
+        <List sx={{ py: 0 }}>
+          <ListItemButton selected={section==="posts"} onClick={()=>{setSection("posts"); setMenuOpen(false);}}>
+            <ListItemIcon><DescriptionRoundedIcon /></ListItemIcon>
+            <ListItemText primary="Makaleler" />
+          </ListItemButton>
+          <ListItemButton selected={section==="slider"} onClick={()=>{setSection("slider"); setMenuOpen(false);}}>
+            <ListItemIcon><SlideshowRoundedIcon /></ListItemIcon>
+            <ListItemText primary="Slider" />
+          </ListItemButton>
+          <ListItemButton selected={section==="authors"} onClick={()=>{setSection("authors"); setMenuOpen(false);}}>
+            <ListItemIcon><PeopleAltRoundedIcon /></ListItemIcon>
+            <ListItemText primary="Yazarlar" />
+          </ListItemButton>
+        </List>
+      </Box>
 
-  const published = useMemo(() => list.filter((m) => m.status === "published"), [list]);
-  const pending   = useMemo(() => list.filter((m) => m.status === "pending"), [list]);
-  const draftList = useMemo(() => list.filter((m) => m.status === "draft"), [list]);
+      {/* alt sabit “Hoş geldiniz” */}
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          p: 2,
+          bgcolor: "background.paper",
+          borderTop: "1px solid",
+          borderColor: "divider",
+        }}
+      >
+        <Typography variant="caption" sx={{ color: "text.primary", fontSize: 12, fontWeight: 600 }}>
+          Hoş geldiniz,
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>{user?.email || "—"}</Typography>
+        <Button
+          size="small"
+          variant="outlined"
+          startIcon={<LogoutRoundedIcon />}
+          onClick={handleLogout}
+          fullWidth
+        >
+          Çıkış Yap
+        </Button>
+      </Box>
+    </Box>
+  );
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h5" fontWeight={800} gutterBottom>Girne Yönetim Paneli</Typography>
+    <Box sx={{ display: "flex", minHeight: "100vh" }}>
+      {/* AppBar */}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          bgcolor: 'error.main',
+          color: 'common.white',
+          borderRadius: 0,
+          boxShadow: '0 1px 2px rgba(0,0,0,.08)',
+          zIndex: (t) => t.zIndex.drawer + 1
+        }}
+      >
+        <Toolbar sx={{ minHeight: APPBAR_HEIGHT, gap: 2 }}>
+          <IconButton
+            edge="start"
+            onClick={() => setMenuOpen(true)}
+            sx={{ color: 'common.white', display: { md: 'none' } }}
+          >
+            <MenuRoundedIcon />
+          </IconButton>
+          <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: .2, color: '#fff !important' }}>
+            Yönetim Paneli
+          </Typography>
+        </Toolbar>
+      </AppBar>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={5}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle1" fontWeight={700} gutterBottom>Yeni Makale</Typography>
-            <Stack spacing={2} component="form" onSubmit={submit}>
-              <TextField label="Başlık" value={baslik} onChange={(e) => setBaslik(e.target.value)} required />
-              <TextField label="Kategori" value={kategori} onChange={(e) => setKategori(e.target.value)} />
-              <TextField
-                label="İçerik"
-                value={icerik}
-                onChange={(e) => setIcerik(e.target.value)}
-                multiline minRows={5}
-                placeholder="Metni buraya yazın…"
-                required
-              />
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Button component="label" variant="outlined" startIcon={<AddPhotoAlternateRoundedIcon />}>
-                  Kapak Görseli
-                  <input type="file" hidden accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
-                </Button>
-                {file && <Chip label={file.name} onDelete={() => setFile(null)} />}
-              </Stack>
-              <Stack direction="row" spacing={1} justifyContent="flex-end">
-                <Button onClick={() => { setBaslik(""); setIcerik(""); setKategori(""); setFile(null); }}>Temizle</Button>
-                <Button type="submit" variant="contained">Kaydet</Button>
-              </Stack>
-            </Stack>
-          </Paper>
-        </Grid>
+      {/* Sol Drawer (permanent) */}
+      <Drawer
+        variant="permanent"
+        sx={{
+          width: DRAWER_WIDTH,
+          flexShrink: 0,
+          [`& .MuiDrawer-paper`]: {
+            width: DRAWER_WIDTH,
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            height: `calc(100vh - ${APPBAR_HEIGHT}px)`,
+            top: APPBAR_HEIGHT,           // AppBar’ın altından başla
+            overflow: 'hidden',
+            borderRight: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 0,
+          },
+        }}
+        open
+      >
+        {drawer}
+      </Drawer>
 
-        <Grid item xs={12} md={7}>
-          <Paper variant="outlined" sx={{ p: 2 }}>
-            <Typography variant="subtitle1" fontWeight={700}>Makaleler</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              {loading ? "Yükleniyor..." : `Toplam: ${list.length}`}
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
+      {/* Mobil Drawer (temporary) */}
+      <Drawer
+        variant="temporary"
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          [`& .MuiDrawer-paper`]: {
+            width: DRAWER_WIDTH,
+            boxSizing: 'border-box',
+            display: 'flex',
+            flexDirection: 'column',
+            height: `calc(100vh - ${APPBAR_HEIGHT}px)`,
+            top: APPBAR_HEIGHT,
+            overflow: 'hidden',
+            borderRadius: 0,
+          },
+        }}
+      >
+        {drawer}
+      </Drawer>
 
-            <Typography variant="overline">Bekleyen</Typography>
-            <List dense>
-              {pending.map((m) => (
-                <ListItem
-                  key={m.id}
-                  secondaryAction={
-                    <Stack direction="row" spacing={1}>
-                      <IconButton aria-label="publish" onClick={() => publish(m.id)}><PublishRoundedIcon /></IconButton>
-                      <IconButton aria-label="delete" onClick={() => remove(m.id)}><DeleteRoundedIcon /></IconButton>
-                    </Stack>
-                  }
-                >
-                  <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
-                </ListItem>
-              ))}
-              {pending.length === 0 && <Typography variant="body2" color="text.secondary" sx={{ pl: 2 }}>Bekleyen yok</Typography>}
-            </List>
+      {/* Sağ içerik */}
+      <Box component="main" sx={{ flexGrow: 1, p: 3, width: { md: `calc(100% - ${DRAWER_WIDTH}px)` } }}>
+        {/* AppBar boşluğu */}
+        <Toolbar sx={{ minHeight: APPBAR_HEIGHT }} />
 
-            <Divider sx={{ my: 2 }} />
+        <Container maxWidth="lg" sx={{ px: 0 }}>
+          {section === "posts" && (
+            <>
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700} gutterBottom>Yeni Makale</Typography>
+                <Stack spacing={2} component="form" onSubmit={createPost}>
+                  <TextField label="Başlık" value={pTitle} onChange={(e)=>setPTitle(e.target.value)} required InputLabelProps={labelProps} />
+                  <TextField label="Kategori" value={pCat} onChange={(e)=>setPCat(e.target.value)} InputLabelProps={labelProps} />
+                  <TextField label="İçerik" value={pBody} onChange={(e)=>setPBody(e.target.value)} multiline minRows={5} required InputLabelProps={labelProps} />
+                  <TextField select label="Yazar (opsiyonel)" value={pAuthorId} onChange={(e)=>setPAuthorId(e.target.value)} InputLabelProps={labelProps}>
+                    <MenuItem value="">— Yok —</MenuItem>
+                    {authors.map(a => <MenuItem key={a.id} value={a.id}>{a.name}</MenuItem>)}
+                  </TextField>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Button component="label" variant="outlined" startIcon={<AddPhotoAlternateRoundedIcon />}>
+                      Kapak Görseli
+                      <input hidden type="file" accept="image/*" onChange={(e)=>setPFile(e.target.files?.[0]||null)} />
+                    </Button>
+                    {pFile && <Chip label={pFile.name} onDelete={()=>setPFile(null)} />}
+                  </Stack>
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button onClick={()=>{ setPTitle(""); setPBody(""); setPCat(""); setPAuthorId(""); setPFile(null); }}>Temizle</Button>
+                    <Button type="submit" variant="contained">Kaydet</Button>
+                  </Stack>
+                </Stack>
+              </Section>
 
-            <Typography variant="overline">Yayımlanan</Typography>
-            <List dense>
-              {published.map((m) => (
-                <ListItem
-                  key={m.id}
-                  secondaryAction={
-                    <Stack direction="row" spacing={1}>
-                      <IconButton aria-label="to-draft" onClick={() => draft(m.id)}><UnpublishedRoundedIcon /></IconButton>
-                      <IconButton aria-label="delete" onClick={() => remove(m.id)}><DeleteRoundedIcon /></IconButton>
-                    </Stack>
-                  }
-                >
-                  <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
-                </ListItem>
-              ))}
-              {published.length === 0 && <Typography variant="body2" color="text.secondary" sx={{ pl: 2 }}>Yayımlı yok</Typography>}
-            </List>
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700}>Makaleler</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                  {loadingPosts ? "Yükleniyor..." : `Toplam: ${posts.length}`}
+                </Typography>
+                <Divider sx={{ my: 2 }} />
 
-            <Divider sx={{ my: 2 }} />
+                <Typography variant="overline">Bekleyen</Typography>
+                {pending.length === 0 && <Typography sx={{ mb:1 }} color="text.secondary">Bekleyen yok</Typography>}
+                {pending.map(m => (
+                  <List dense key={`p-${m.id}`}>
+                    <ListItemButton>
+                      <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={()=>publishPost(m.id)} startIcon={<PublishRoundedIcon/>}>Yayınla</Button>
+                        <Button size="small" onClick={()=>deletePost(m.id)} color="error" startIcon={<DeleteRoundedIcon/>}>Sil</Button>
+                      </Stack>
+                    </ListItemButton>
+                  </List>
+                ))}
 
-            <Typography variant="overline">Taslak</Typography>
-            <List dense>
-              {draftList.map((m) => (
-                <ListItem
-                  key={m.id}
-                  secondaryAction={
-                    <Stack direction="row" spacing={1}>
-                      <IconButton aria-label="publish" onClick={() => publish(m.id)}><PublishRoundedIcon /></IconButton>
-                      <IconButton aria-label="delete" onClick={() => remove(m.id)}><DeleteRoundedIcon /></IconButton>
-                    </Stack>
-                  }
-                >
-                  <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
-                </ListItem>
-              ))}
-              {draftList.length === 0 && <Typography variant="body2" color="text.secondary" sx={{ pl: 2 }}>Taslak yok</Typography>}
-            </List>
-          </Paper>
-        </Grid>
-      </Grid>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="overline">Yayımlanan</Typography>
+                {published.length === 0 && <Typography sx={{ mb:1 }} color="text.secondary">Yayımlı yok</Typography>}
+                {published.map(m => (
+                  <List dense key={`pub-${m.id}`}>
+                    <ListItemButton>
+                      <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={()=>draftPost(m.id)} startIcon={<UnpublishedRoundedIcon/>}>Taslağa Al</Button>
+                        <Button size="small" onClick={()=>deletePost(m.id)} color="error" startIcon={<DeleteRoundedIcon/>}>Sil</Button>
+                      </Stack>
+                    </ListItemButton>
+                  </List>
+                ))}
+
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="overline">Taslak</Typography>
+                {drafts.length === 0 && <Typography sx={{ mb:1 }} color="text.secondary">Taslak yok</Typography>}
+                {drafts.map(m => (
+                  <List dense key={`d-${m.id}`}>
+                    <ListItemButton>
+                      <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={()=>publishPost(m.id)} startIcon={<PublishRoundedIcon/>}>Yayınla</Button>
+                        <Button size="small" onClick={()=>deletePost(m.id)} color="error" startIcon={<DeleteRoundedIcon/>}>Sil</Button>
+                      </Stack>
+                    </ListItemButton>
+                  </List>
+                ))}
+              </Section>
+            </>
+          )}
+
+          {section === "slider" && (
+            <>
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700} gutterBottom>Yeni Slider</Typography>
+                <Stack spacing={2} component="form" onSubmit={createSlide}>
+                  <TextField label="Başlık" value={sTitle} onChange={(e)=>setSTitle(e.target.value)} required InputLabelProps={labelProps} />
+                  <TextField label="Alt başlık" value={sSubtitle} onChange={(e)=>setSSubtitle(e.target.value)} InputLabelProps={labelProps} />
+                  <TextField label="Link (opsiyonel)" value={sHref} onChange={(e)=>setSHref(e.target.value)} placeholder="/haber/slug-ya-da-url" InputLabelProps={labelProps} />
+                  <TextField type="number" label="Sıra" value={sSort} onChange={(e)=>setSSort(e.target.value)} InputLabelProps={labelProps} />
+                  <FormControlLabel control={<Switch checked={sActive} onChange={(e)=>setSActive(e.target.checked)} />} label="Aktif" />
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Button component="label" variant="outlined" startIcon={<AddPhotoAlternateRoundedIcon />}>
+                      Görsel Yükle
+                      <input hidden type="file" accept="image/*" onChange={(e)=>setSFile(e.target.files?.[0]||null)} />
+                    </Button>
+                    {sFile && <Chip label={sFile.name} onDelete={()=>setSFile(null)} />}
+                  </Stack>
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button onClick={()=>{ setSTitle(""); setSSubtitle(""); setSHref(""); setSSort(0); setSActive(true); setSFile(null); }}>Temizle</Button>
+                    <Button type="submit" variant="contained">Kaydet</Button>
+                  </Stack>
+                </Stack>
+              </Section>
+
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700}>Slider Kayıtları</Typography>
+                <Divider sx={{ my: 2 }} />
+                {slides.length === 0 && <Typography color="text.secondary">Kayıt yok</Typography>}
+                {slides.map(s => (
+                  <List dense key={s.id}>
+                    <ListItemButton>
+                      <ListItemText primary={`${s.sort}. ${s.title}`} secondary={s.subtitle || s.linkHref || "—"} />
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={()=>toggleSlide(s)}>{s.active ? "Pasifleştir" : "Aktifleştir"}</Button>
+                        <Button size="small" onClick={()=>deleteSlide(s.id)} color="error">Sil</Button>
+                      </Stack>
+                    </ListItemButton>
+                  </List>
+                ))}
+              </Section>
+            </>
+          )}
+
+          {section === "authors" && (
+            <>
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700} gutterBottom>Yeni Yazar</Typography>
+                <Stack spacing={2} component="form" onSubmit={createAuthor}>
+                  <TextField label="İsim" value={aName} onChange={(e)=>setAName(e.target.value)} required InputLabelProps={labelProps} />
+                  <TextField label="Biyografi" value={aBio} onChange={(e)=>setABio(e.target.value)} multiline minRows={4} InputLabelProps={labelProps} />
+                  <TextField label="Twitter" value={aTwitter} onChange={(e)=>setATwitter(e.target.value)} InputLabelProps={labelProps} />
+                  <TextField label="Instagram" value={aInsta} onChange={(e)=>setAInsta(e.target.value)} InputLabelProps={labelProps} />
+                  <TextField label="Web Sitesi" value={aWeb} onChange={(e)=>setAWeb(e.target.value)} InputLabelProps={labelProps} />
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Button component="label" variant="outlined" startIcon={<AddPhotoAlternateRoundedIcon />}>
+                      Avatar Yükle
+                      <input hidden type="file" accept="image/*" onChange={(e)=>setAFile(e.target.files?.[0]||null)} />
+                    </Button>
+                    {aFile && <Chip label={aFile.name} onDelete={()=>setAFile(null)} />}
+                  </Stack>
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button onClick={()=>{ setAName(""); setABio(""); setATwitter(""); setAInsta(""); setAWeb(""); setAFile(null); }}>Temizle</Button>
+                    <Button type="submit" variant="contained">Kaydet</Button>
+                  </Stack>
+                </Stack>
+              </Section>
+
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700}>Yazarlar</Typography>
+                <Divider sx={{ my: 2 }} />
+                {authors.length === 0 && <Typography color="text.secondary">Yazar yok</Typography>}
+                {authors.map(a => (
+                  <List dense key={a.id}>
+                    <ListItemButton>
+                      <ListItemText primary={a.name} secondary={`/${a.slug}`} />
+                      <Button size="small" color="error" onClick={()=>deleteAuthor(a.id)}>Sil</Button>
+                    </ListItemButton>
+                  </List>
+                ))}
+              </Section>
+            </>
+          )}
+        </Container>
+      </Box>
 
       <Snackbar
         open={toast.open}
-        autoHideDuration={2500}
-        onClose={() => setToast((t) => ({ ...t, open: false }))}
+        autoHideDuration={2200}
+        onClose={()=>setToast(t=>({ ...t, open:false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert
-          onClose={() => setToast((t) => ({ ...t, open: false }))}
-          severity={toast.type}
-          variant="filled"
-          sx={{ width: "100%" }}
-        >
+        <Alert onClose={()=>setToast(t=>({ ...t, open:false }))} severity={toast.type} variant="filled" sx={{ width: "100%" }}>
           {toast.msg}
         </Alert>
       </Snackbar>
-    </Container>
+    </Box>
   );
 }
