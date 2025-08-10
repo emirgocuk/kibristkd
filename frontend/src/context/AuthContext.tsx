@@ -16,12 +16,19 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
 
   useEffect(() => {
     (async () => {
+      const t = getToken();
+      if (!t) {
+        setLoading(false);
+        return;
+      }
       try {
-        if (!getToken()) return;
         const r = await http.get("/api/auth/me");
         setUser(r.data?.user ?? null);
-      } catch {}
-      finally { setLoading(false); }
+      } catch {
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
