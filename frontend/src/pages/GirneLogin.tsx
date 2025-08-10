@@ -1,21 +1,26 @@
 import React, { useState } from "react";
 import { Box, Button, Container, Paper, Stack, TextField, Typography, Alert } from "@mui/material";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useLocation, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function GirneLogin() {
   const { user, login } = useAuth();
   const nav = useNavigate();
+  const loc = useLocation();
+  const deniedReason = (loc.state as any)?.reason;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string|null>(null);
 
-  if (user) return <Navigate to="/girne/panel" replace />;
+  if (user?.role === "admin") return <Navigate to="/girne/panel" replace />;
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr(null);
-    try { await login(email, password); nav("/girne/panel"); }
+    try {
+      await login(email, password);
+      nav("/girne/panel", { replace: true });
+    }
     catch (e: any) { setErr(e?.response?.data?.message || e?.message || "Giriş başarısız"); }
   };
 
@@ -25,6 +30,8 @@ export default function GirneLogin() {
         <Typography variant="h5" fontWeight={700} mb={2}>Girne — Yönetim Girişi</Typography>
         <Box component="form" onSubmit={submit}>
           <Stack spacing={2}>
+            {deniedReason === "denied" && <Alert severity="warning">Bu sayfaya erişmek için admin yetkisi gerekli.</Alert>}
+            {deniedReason === "auth" && <Alert severity="info">Lütfen giriş yapın.</Alert>}
             {err && <Alert severity="error">{err}</Alert>}
             <TextField label="E-posta" value={email} onChange={e=>setEmail(e.target.value)} required />
             <TextField label="Şifre" type="password" value={password} onChange={e=>setPassword(e.target.value)} required />
