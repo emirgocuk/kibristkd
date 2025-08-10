@@ -19,4 +19,10 @@ http.interceptors.request.use((config) => {
   return config;
 });
 
+export function unwrap<T = any>(resp: any, fallback: T): T {
+  if (resp?.data?.data !== undefined) return resp.data.data as T;
+  if (resp?.data !== undefined) return resp.data as T;
+  return fallback;
+}
+
 export default http;
