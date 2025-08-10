@@ -1,4 +1,4 @@
-// src/pages/HomePage.tsx
+// src/pages/HomePage.jsx
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box, Button, Chip, Container, FormControl, Grid, IconButton, InputAdornment,
@@ -17,78 +17,86 @@ import Sidebar from '../components/Sidebar';
 import SectionTitle from '../components/SectionTitle';
 import HaberKarti from '../components/HaberKarti';
 
-type Makale = {
-  id: string | number;
-  title?: string; baslik?: string;
-  content?: string; icerik?: string; body?: string;
-  image?: string; kapakResmi?: string;
-  createdAt?: string; updatedAt?: string; date?: string; tarih?: string;
-  category?: string; kategori?: string;
-  tags?: string[];
-};
-
 const PAGE_SIZE = 8;
 
 /* — küçük kırmızı şerit başlık — */
-const RibbonTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Box sx={{ mb: 1.25 }}>
-    <Box sx={{
-      display: 'inline-block', px: 1.25, py: 0.5, borderRadius: 0.5,
-      bgcolor: '#d32f2f', color: '#fff', fontWeight: 700, fontSize: 13, letterSpacing: 0.3, textTransform: 'uppercase'
-    }}>
-      {children}
+function RibbonTitle({ children }) {
+  return (
+    <Box sx={{ mb: 1.25 }}>
+      <Box sx={{
+        display: 'inline-block', px: 1.25, py: 0.5, borderRadius: 0.5,
+        bgcolor: '#d32f2f', color: '#fff', fontWeight: 700, fontSize: 13, letterSpacing: 0.3, textTransform: 'uppercase'
+      }}>
+        {children}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+}
 
 /* — yükleme iskeleti — */
-const SkeletonCard: React.FC<{ lines?: number }> = ({ lines = 2 }) => (
-  <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-    <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 1, mb: 1.5 }} />
-    {Array.from({ length: lines }).map((_, i) => (
-      <Skeleton key={i} width={i ? '60%' : '85%'} />
-    ))}
-  </Box>
-);
+function SkeletonCard({ lines = 2 }) {
+  return (
+    <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
+      <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 1, mb: 1.5 }} />
+      {Array.from({ length: lines }).map((_, i) => (
+        <Skeleton key={i} width={i ? '60%' : '85%'} />
+      ))}
+    </Box>
+  );
+}
 
 /* — sağ sütundaki “imgur” benzeri reklam kutusu — */
-const AdBox: React.FC<{ height?: number }> = ({ height = 250 }) => (
-  <Paper variant="outlined" sx={{ p: 1.5, mb: 3 }}>
-    <Box sx={{
-      height, borderRadius: 1, border: '1px dashed', borderColor: 'divider',
-      display: 'grid', placeItems: 'center', textAlign: 'center', px: 2
-    }}>
-      <Typography variant="caption" color="text.secondary">
-        The image you are<br/>requesting does not exist<br/>or is no longer available.
-      </Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>imgur.com</Typography>
-    </Box>
-  </Paper>
-);
+function AdBox({ height = 250 }) {
+  return (
+    <Paper variant="outlined" sx={{ p: 1.5, mb: 3 }}>
+      <Box sx={{
+        height, borderRadius: 1, border: '1px dashed', borderColor: 'divider',
+        display: 'grid', placeItems: 'center', textAlign: 'center', px: 2
+      }}>
+        <Typography variant="caption" color="text.secondary">
+          The image you are<br/>requesting does not exist<br/>or is no longer available.
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>imgur.com</Typography>
+      </Box>
+    </Paper>
+  );
+}
 
-const HomePage: React.FC = () => {
-  const [makaleler, setMakaleler] = useState<Makale[]>([]);
+export default function HomePage() {
+  const [makaleler, setMakaleler] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState<string | null>(null);
+  const [error, setError]   = useState(null);
 
   // arama & sıralama
   const [rawQuery, setRawQuery] = useState('');
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState<'newest' | 'oldest'>('newest');
+  const [sort, setSort] = useState('newest'); // 'newest' | 'oldest'
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreRef = useRef(null);
   const [showTop, setShowTop] = useState(false);
 
-  useEffect(() => { const t = setTimeout(() => setQuery(rawQuery), 300); return () => clearTimeout(t); }, [rawQuery]);
+  useEffect(() => {
+    const t = setTimeout(() => setQuery(rawQuery), 300);
+    return () => clearTimeout(t);
+  }, [rawQuery]);
 
+  // backend { success, data } döndürüyor → güvenli parse et
   const fetchMakaleler = async () => {
     try {
-      setLoading(true); setError(null);
+      setLoading(true);
+      setError(null);
       const res = await axios.get('/api/makaleler');
-      setMakaleler(res.data || []);
+      const list = Array.isArray(res?.data?.data)
+        ? res.data.data
+        : (Array.isArray(res?.data) ? res.data : []);
+      setMakaleler(list);
     } catch (e) {
-      console.error(e); setError('Makaleler yüklenirken bir sorun oluştu.');
-    } finally { setLoading(false); }
+      console.error(e);
+      setError('Makaleler yüklenirken bir sorun oluştu.');
+      setMakaleler([]);
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => { fetchMakaleler(); }, []);
 
@@ -99,7 +107,7 @@ const HomePage: React.FC = () => {
     }, { rootMargin: '200px' });
     ob.observe(loadMoreRef.current);
     return () => ob.disconnect();
-  }, [loadMoreRef.current]);
+  }, []); // ref.current’ı dependency yapma
 
   useEffect(() => {
     const onScroll = () => setShowTop(window.scrollY > 600);
@@ -107,9 +115,10 @@ const HomePage: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const normalize = (v: any) => (v || '').toString().toLowerCase();
+  const normalize = (v) => (v || '').toString().toLowerCase();
   const refinedList = useMemo(() => {
-    let list = [...makaleler];
+    const base = Array.isArray(makaleler) ? makaleler : [];
+    let list = [...base];
     if (query.trim()) {
       const q = normalize(query);
       list = list.filter((item) => {
@@ -131,17 +140,16 @@ const HomePage: React.FC = () => {
   const rest = refinedList.slice(1, visibleCount);
 
   // kategori blokları
-  const cat = (m: Makale) => (m.category || m.kategori || '').toString().trim();
-  const byCat = (name: string, take = 5) =>
-    refinedList.filter((m) => cat(m) === name).slice(0, take);
+  const cat = (m) => (m.category || m.kategori || '').toString().trim();
+  const byCat = (name, take = 5) => refinedList.filter((m) => cat(m) === name).slice(0, take);
 
   const LEFT_BLOCKS = [
-    { title: 'Basında KKTC', key: 'Basında KKTC', take: 6, style: 'table' as const },
-    { title: 'Kamu Uygulamaları', key: 'Kamu Uygulamaları', take: 4, style: 'two-col' as const },
-    { title: 'Etkinlikler', key: 'Etkinlikler', take: 3, style: 'events' as const },
-    { title: 'Kıbrıs’la İlgili Tavsiyeler', key: 'Kıbrıs’la İlgili Tavsiyeler', take: 2, style: 'cards' as const },
-    { title: 'Kıbrıs Yemekleri', key: 'Kıbrıs Yemekleri', take: 2, style: 'cards' as const },
-    { title: 'Kıbrıs Türk Kültürü', key: 'Kıbrıs Türk Kültürü', take: 4, style: 'grid4' as const },
+    { title: 'Basında KKTC', key: 'Basında KKTC', take: 6, style: 'table' },
+    { title: 'Kamu Uygulamaları', key: 'Kamu Uygulamaları', take: 4, style: 'two-col' },
+    { title: 'Etkinlikler', key: 'Etkinlikler', take: 3, style: 'events' },
+    { title: 'Kıbrıs’la İlgili Tavsiyeler', key: 'Kıbrıs’la İlgili Tavsiyeler', take: 2, style: 'cards' },
+    { title: 'Kıbrıs Yemekleri', key: 'Kıbrıs Yemekleri', take: 2, style: 'cards' },
+    { title: 'Kıbrıs Türk Kültürü', key: 'Kıbrıs Türk Kültürü', take: 4, style: 'grid4' },
   ];
 
   const duyurular = [
@@ -160,7 +168,7 @@ const HomePage: React.FC = () => {
   const clearAll = () => { setRawQuery(''); setQuery(''); setSort('newest'); setVisibleCount(PAGE_SIZE); };
 
   const bannerImg = '/slide1.jpg'; // public/slide1.jpg
-  const pickTitle = (m: Makale) => (m.title || m.baslik || 'Başlık').toString();
+  const pickTitle = (m) => (m.title || m.baslik || 'Başlık').toString();
 
   return (
     <Box>
@@ -215,7 +223,12 @@ const HomePage: React.FC = () => {
                   />
                   <FormControl size="small" sx={{ minWidth: 150 }}>
                     <InputLabel id="sort-label">Sırala</InputLabel>
-                    <Select labelId="sort-label" label="Sırala" value={sort} onChange={(e) => setSort(e.target.value as any)}>
+                    <Select
+                      labelId="sort-label"
+                      label="Sırala"
+                      value={sort}
+                      onChange={(e) => setSort(e.target.value)}
+                    >
                       <MenuItem value="newest">En Yeni</MenuItem>
                       <MenuItem value="oldest">En Eski</MenuItem>
                     </Select>
@@ -451,6 +464,4 @@ const HomePage: React.FC = () => {
       )}
     </Box>
   );
-};
-
-export default HomePage;
+}
