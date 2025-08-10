@@ -1,36 +1,30 @@
-import {
-  Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, Index, Unique
-} from "typeorm";
-import { Makale } from "./Makale.js";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
-@Unique(["slug"])
 export class Author {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ length: 140 })
+  @Column({ type: "varchar", length: 200 })
   name!: string;
-
-  @Index()
-  @Column({ length: 160 })
-  slug!: string;
 
   @Column({ type: "text", nullable: true })
   bio!: string | null;
 
-  @Column({ type: "simple-json", nullable: true })
-  socials!: { twitter?: string; instagram?: string; website?: string } | null;
+  // Sosyal linkler için esnek alan
+  @Column({ type: "json", nullable: true })
+  socials!: any | null;
 
-  // avatar blob + mime
+  // Avatar (blob)
   @Column({ type: "longblob", nullable: true })
   avatarBlob!: Buffer | null;
 
   @Column({ type: "varchar", length: 100, nullable: true })
   avatarMime!: string | null;
 
-  @OneToMany(() => Makale, (m) => m.author)
-  posts!: Makale[];
+  // İsteğe bağlı slug (UI’da gösteriliyor)
+  @Column({ type: "varchar", length: 255, unique: true, nullable: true })
+  slug!: string | null;
 
   @CreateDateColumn()
   createdAt!: Date;

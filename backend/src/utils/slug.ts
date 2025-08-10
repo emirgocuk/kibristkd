@@ -1,42 +1,37 @@
-import { Repository } from "typeorm";
+import { Repository, Not } from "typeorm";
 
-// Türkçe karakterleri sadeleştir, boşlukları - yap
-export function slugify(input: string): string {
-  const map: Record<string, string> = {
-    ç: "c", ğ: "g", ı: "i", ö: "o", ş: "s", ü: "u",
-    Ç: "c", Ğ: "g", I: "i", İ: "i", Ö: "o", Ş: "s", Ü: "u",
-  };
-  const replaced = input
-    .split("")
-    .map((ch) => map[ch] ?? ch)
-    .join("");
+type HasIdSlug = { id: number; slug?: string | null };
 
-  return replaced
-    .toLowerCase()
+export function slugify(s: string): string {
+  return s
+    .toString()
     .normalize("NFKD")
-    .replace(/[^\w\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i").replace(/İ/g, "I")
+    .replace(/ş/g, "s").replace(/Ş/g, "S")
+    .replace(/ğ/g, "g").replace(/Ğ/g, "G")
+    .replace(/ç/g, "c").replace(/Ç/g, "C")
+    .replace(/ö/g, "o").replace(/Ö/g, "O")
+    .replace(/ü/g, "u").replace(/Ü/g, "U")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
 }
 
-// repo üzerinde benzersiz slug üret
-export async function uniqueSlug<T extends { id: number; slug: string }>(
+export async function uniqueSlug<T extends HasIdSlug>(
   repo: Repository<T>,
-  baseTitle: string,
-  excludeId?: number
+  title: string,
+  currentId?: number
 ): Promise<string> {
-  const base = slugify(baseTitle) || "icerik";
+  const base = slugify(title);
   let candidate = base;
-  let i = 2;
+  let i = 1;
 
   while (true) {
-    const where: any = { slug: candidate };
-    if (excludeId) where.id = (val: number) => val !== excludeId; // typeorm raw yoksa alttaki fallback:
-    const exists = await repo.findOne({ where: { slug: candidate } as any });
-    if (!exists || (excludeId && exists.id === excludeId)) {
-      return candidate;
-    }
-    candidate = `${base}-${i++}`;
+    const where: any = currentId ? { slug: candidate, id: Not(currentId) } : { slug: candidate };
+    const exists = await repo.findOne({ where });
+    if (!exists) return candidate;
+    i++;
+    candidate = `${base}-${i}`;
   }
 }

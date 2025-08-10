@@ -6,13 +6,14 @@ import http from "../api/http";
 import {
   AppBar, Toolbar, IconButton, Typography, Drawer, List, ListItemButton,
   ListItemText, Box, Container, Paper, Stack, TextField, Button, Divider,
-  Chip, MenuItem, Snackbar, Alert, ListItemIcon, FormControlLabel, Switch
+  Chip, MenuItem, Snackbar, Alert, ListItemIcon, FormControlLabel, Switch, List as MList
 } from "@mui/material";
 
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
 import DescriptionRoundedIcon from "@mui/icons-material/DescriptionRounded";
 import SlideshowRoundedIcon from "@mui/icons-material/SlideshowRounded";
 import PeopleAltRoundedIcon from "@mui/icons-material/PeopleAltRounded";
+import CampaignRoundedIcon from "@mui/icons-material/CampaignRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
 import AddPhotoAlternateRoundedIcon from "@mui/icons-material/AddPhotoAlternateRounded";
 import PublishRoundedIcon from "@mui/icons-material/PublishRounded";
@@ -31,7 +32,7 @@ export default function GirnePanel() {
 
   // sol menü seçimi
   const [menuOpen, setMenuOpen] = useState(false);
-  const [section, setSection] = useState("posts"); // "posts" | "slider" | "authors"
+  const [section, setSection] = useState("posts"); // "posts" | "slider" | "authors" | "announcements"
 
   // bildirim
   const [toast, setToast] = useState({ open: false, msg: "", type: "success" });
@@ -70,6 +71,13 @@ export default function GirnePanel() {
   const [aWeb, setAWeb] = useState("");
   const [aFile, setAFile] = useState(null);
 
+  // ----- Duyurular
+  const [anns, setAnns] = useState([]);
+  const [anTitle, setAnTitle] = useState("");
+  const [anMsg, setAnMsg] = useState("");
+  const [anSort, setAnSort] = useState(0);
+  const [anActive, setAnActive] = useState(true);
+
   // --- Label (InputLabel) rengi: varsayılan siyah, focus'ta kırmızı
   const labelProps = { sx: { color: 'text.primary', '&.Mui-focused': { color: 'error.main' } } };
 
@@ -91,11 +99,16 @@ export default function GirnePanel() {
     const res = await http.get("/slider/admin");
     setSlides(res.data?.data ?? []);
   }
+  async function loadAnnouncements() {
+    const res = await http.get("/duyurular/admin"); // TR alias backend’de var
+    setAnns(res.data?.data ?? []);
+  }
 
   useEffect(() => {
     loadAuthors();
     loadPosts();
     loadSlides();
+    loadAnnouncements();
   }, []);
 
   // -------- Makale actions
@@ -177,6 +190,30 @@ export default function GirnePanel() {
   }
   const deleteAuthor = async (id) => { await http.delete(`/authors/${id}`); ok("Yazar silindi","warning"); loadAuthors(); };
 
+  // -------- Duyuru actions
+  async function createAnnouncement(e) {
+    e.preventDefault();
+    if (!anTitle.trim()) return ok("Başlık zorunlu", "warning");
+    await http.post("/duyurular", {
+      title: anTitle.trim(),
+      message: anMsg.trim() || null,
+      sort: Number(anSort) || 0,
+      active: !!anActive,
+    });
+    ok("Duyuru eklendi");
+    setAnTitle(""); setAnMsg(""); setAnSort(0); setAnActive(true);
+    await loadAnnouncements();
+  }
+  const toggleAnnouncement = async (a) => {
+    await http.put(`/duyurular/${a.id}`, { active: !a.active });
+    await loadAnnouncements();
+  };
+  const deleteAnnouncement = async (id) => {
+    await http.delete(`/duyurular/${id}`);
+    ok("Silindi","warning");
+    await loadAnnouncements();
+  };
+
   // -------- logout
   const handleLogout = async () => {
     try { if (logout) await logout(); } catch {}
@@ -201,6 +238,10 @@ export default function GirnePanel() {
           <ListItemButton selected={section==="authors"} onClick={()=>{setSection("authors"); setMenuOpen(false);}}>
             <ListItemIcon><PeopleAltRoundedIcon /></ListItemIcon>
             <ListItemText primary="Yazarlar" />
+          </ListItemButton>
+          <ListItemButton selected={section==="announcements"} onClick={()=>{setSection("announcements"); setMenuOpen(false);}}>
+            <ListItemIcon><CampaignRoundedIcon /></ListItemIcon>
+            <ListItemText primary="Duyurular" />
           </ListItemButton>
         </List>
       </Box>
@@ -258,6 +299,27 @@ export default function GirnePanel() {
           <Typography variant="h6" sx={{ fontWeight: 800, letterSpacing: .2, color: '#fff !important' }}>
             Yönetim Paneli
           </Typography>
+
+          {/* AppBar sağında kayan duyuru */}
+          <Box sx={{ ml: 'auto', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: { xs: '40%', md: '50%' } }}>
+            <Box
+              sx={{
+                display: 'inline-block',
+                px: 2,
+                animation: 'marquee 15s linear infinite',
+                '@keyframes marquee': {
+                  '0%': { transform: 'translateX(100%)' },
+                  '100%': { transform: 'translateX(-100%)' },
+                },
+                color: '#fff',
+                opacity: 0.9,
+                fontSize: 14,
+              }}
+              title={anns.filter(a=>a.active).map(a=>a.title).join(' • ')}
+            >
+              {anns.filter(a=>a.active).map(a => a.title).join(' • ') || 'Duyuru yok'}
+            </Box>
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -273,7 +335,7 @@ export default function GirnePanel() {
             display: 'flex',
             flexDirection: 'column',
             height: `calc(100vh - ${APPBAR_HEIGHT}px)`,
-            top: APPBAR_HEIGHT,           // AppBar’ın altından başla
+            top: APPBAR_HEIGHT,
             overflow: 'hidden',
             borderRight: '1px solid',
             borderColor: 'divider',
@@ -350,7 +412,7 @@ export default function GirnePanel() {
                 <Typography variant="overline">Bekleyen</Typography>
                 {pending.length === 0 && <Typography sx={{ mb:1 }} color="text.secondary">Bekleyen yok</Typography>}
                 {pending.map(m => (
-                  <List dense key={`p-${m.id}`}>
+                  <MList dense key={`p-${m.id}`}>
                     <ListItemButton>
                       <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
                       <Stack direction="row" spacing={1}>
@@ -358,14 +420,14 @@ export default function GirnePanel() {
                         <Button size="small" onClick={()=>deletePost(m.id)} color="error" startIcon={<DeleteRoundedIcon/>}>Sil</Button>
                       </Stack>
                     </ListItemButton>
-                  </List>
+                  </MList>
                 ))}
 
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="overline">Yayımlanan</Typography>
                 {published.length === 0 && <Typography sx={{ mb:1 }} color="text.secondary">Yayımlı yok</Typography>}
                 {published.map(m => (
-                  <List dense key={`pub-${m.id}`}>
+                  <MList dense key={`pub-${m.id}`}>
                     <ListItemButton>
                       <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
                       <Stack direction="row" spacing={1}>
@@ -373,14 +435,14 @@ export default function GirnePanel() {
                         <Button size="small" onClick={()=>deletePost(m.id)} color="error" startIcon={<DeleteRoundedIcon/>}>Sil</Button>
                       </Stack>
                     </ListItemButton>
-                  </List>
+                  </MList>
                 ))}
 
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="overline">Taslak</Typography>
                 {drafts.length === 0 && <Typography sx={{ mb:1 }} color="text.secondary">Taslak yok</Typography>}
                 {drafts.map(m => (
-                  <List dense key={`d-${m.id}`}>
+                  <MList dense key={`d-${m.id}`}>
                     <ListItemButton>
                       <ListItemText primary={m.baslik} secondary={m.kategori || "—"} />
                       <Stack direction="row" spacing={1}>
@@ -388,7 +450,7 @@ export default function GirnePanel() {
                         <Button size="small" onClick={()=>deletePost(m.id)} color="error" startIcon={<DeleteRoundedIcon/>}>Sil</Button>
                       </Stack>
                     </ListItemButton>
-                  </List>
+                  </MList>
                 ))}
               </Section>
             </>
@@ -423,7 +485,7 @@ export default function GirnePanel() {
                 <Divider sx={{ my: 2 }} />
                 {slides.length === 0 && <Typography color="text.secondary">Kayıt yok</Typography>}
                 {slides.map(s => (
-                  <List dense key={s.id}>
+                  <MList dense key={s.id}>
                     <ListItemButton>
                       <ListItemText primary={`${s.sort}. ${s.title}`} secondary={s.subtitle || s.linkHref || "—"} />
                       <Stack direction="row" spacing={1}>
@@ -431,7 +493,7 @@ export default function GirnePanel() {
                         <Button size="small" onClick={()=>deleteSlide(s.id)} color="error">Sil</Button>
                       </Stack>
                     </ListItemButton>
-                  </List>
+                  </MList>
                 ))}
               </Section>
             </>
@@ -466,12 +528,47 @@ export default function GirnePanel() {
                 <Divider sx={{ my: 2 }} />
                 {authors.length === 0 && <Typography color="text.secondary">Yazar yok</Typography>}
                 {authors.map(a => (
-                  <List dense key={a.id}>
+                  <MList dense key={a.id}>
                     <ListItemButton>
                       <ListItemText primary={a.name} secondary={`/${a.slug}`} />
                       <Button size="small" color="error" onClick={()=>deleteAuthor(a.id)}>Sil</Button>
                     </ListItemButton>
-                  </List>
+                  </MList>
+                ))}
+              </Section>
+            </>
+          )}
+
+          {section === "announcements" && (
+            <>
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700} gutterBottom>Yeni Duyuru</Typography>
+                <Stack spacing={2} component="form" onSubmit={createAnnouncement}>
+                  <TextField label="Başlık" value={anTitle} onChange={(e)=>setAnTitle(e.target.value)} required InputLabelProps={labelProps} />
+                  <TextField label="Mesaj (opsiyonel)" value={anMsg} onChange={(e)=>setAnMsg(e.target.value)} multiline minRows={3} InputLabelProps={labelProps} />
+                  <TextField type="number" label="Sıra" value={anSort} onChange={(e)=>setAnSort(e.target.value)} InputLabelProps={labelProps} />
+                  <FormControlLabel control={<Switch checked={anActive} onChange={(e)=>setAnActive(e.target.checked)} />} label="Aktif" />
+                  <Stack direction="row" spacing={1} justifyContent="flex-end">
+                    <Button onClick={()=>{ setAnTitle(""); setAnMsg(""); setAnSort(0); setAnActive(true); }}>Temizle</Button>
+                    <Button type="submit" variant="contained">Kaydet</Button>
+                  </Stack>
+                </Stack>
+              </Section>
+
+              <Section>
+                <Typography variant="subtitle1" fontWeight={700}>Duyurular</Typography>
+                <Divider sx={{ my: 2 }} />
+                {anns.length === 0 && <Typography color="text.secondary">Kayıt yok</Typography>}
+                {anns.map(a => (
+                  <MList dense key={a.id}>
+                    <ListItemButton>
+                      <ListItemText primary={`${a.sort}. ${a.title}`} secondary={a.message || "—"} />
+                      <Stack direction="row" spacing={1}>
+                        <Button size="small" onClick={()=>toggleAnnouncement(a)}>{a.active ? "Pasifleştir" : "Aktifleştir"}</Button>
+                        <Button size="small" onClick={()=>deleteAnnouncement(a.id)} color="error">Sil</Button>
+                      </Stack>
+                    </ListItemButton>
+                  </MList>
                 ))}
               </Section>
             </>

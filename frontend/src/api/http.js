@@ -1,50 +1,54 @@
+// frontend/src/api/http.js
 import axios from "axios";
 
-// İstersen .env ile ayarla: const baseURL = import.meta.env.VITE_API_BASE || "/api";
-const baseURL = "/api";
-
 const http = axios.create({
-  baseURL,
+  baseURL: "/api",
   withCredentials: false,
 });
 
-// --- Global Authorization header yönetimi ---
+// İsteklere otomatik Bearer token ekle
+http.interceptors.request.use((config) => {
+  try {
+    const t = localStorage.getItem("token");
+    if (t) {
+      if (config.headers?.set) {
+        config.headers.set("Authorization", `Bearer ${t}`);
+      } else {
+        config.headers = config.headers || {};
+        config.headers["Authorization"] = `Bearer ${t}`; // <- düzeltilmiş
+      }
+    }
+  } catch {}
+  return config;
+});
+
+// 401 yakalama (isteğe bağlı yönlendirme yapılabilir)
+http.interceptors.response.use(
+  (r) => r,
+  (err) => {
+    if (err?.response?.status === 401) {
+      // Örn: token bozuksa otomatik çıkış
+      // localStorage.removeItem("token");
+      // window.location.href = "/girne";
+    }
+    return Promise.reject(err);
+  }
+);
+
+/** Axios yanıtından .data.data (yoksa .data) döndürür */
+export async function unwrap(promise) {
+  const res = await promise;
+  return res?.data?.data ?? res?.data;
+}
+
+/** İhtiyaç olursa manuel token eklemek için yardımcı */
 export function attachToken(token) {
   if (token) {
     http.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
     delete http.defaults.headers.common["Authorization"];
   }
-}
-
-// --- URL normalizasyonu ---
-// Eğer endpoint yanlışlıkla "/api/..." diye gelirse, baseURL ile birleşince "/api/api/..." oluyordu.
-// Bu interceptor, istek URL'si "/api/..." ile başlıyorsa öndeki "/api"yi temizler.
-http.interceptors.request.use((config) => {
-  if (typeof config.url === "string") {
-    // mutlak URL ise dokunma
-    if (!/^https?:\/\//i.test(config.url)) {
-      if (config.url.startsWith("/api/")) {
-        config.url = config.url.replace(/^\/api(\/?)/, "/"); // "/api/foo" -> "/foo"
-      }
-      // çift slashları path içinde sadeleştir (http(s) yokken güvenli)
-      config.url = config.url.replace(/\/{2,}/g, "/");
-    }
-  }
-  return config;
-});
-
-// --- unwrap yardımcıları ---
-export async function unwrap(promise) {
-  const res = await promise;
-  const payload = res?.data;
-  if (payload && typeof payload === "object") {
-    if (payload.success === false) {
-      throw new Error(payload.message || "İstek başarısız");
-    }
-    if ("data" in payload) return payload.data;
-  }
-  return payload;
+  return http;
 }
 
 export default http;

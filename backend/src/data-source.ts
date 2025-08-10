@@ -3,7 +3,7 @@ import { DataSource } from "typeorm";
 import { User } from "./entities/User.js";
 import { Makale } from "./entities/Makale.js";
 import { Author } from "./entities/Author.js";
-import { SliderItem } from "./entities/SliderItem.js";
+import { Slider } from "./entities/Slider.js";
 import { Announcement } from "./entities/Announcement.js";
 
 export const AppDataSource = new DataSource({
@@ -15,5 +15,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: true,
   logging: false,
-  entities: [User, Makale, Author, SliderItem, Announcement],
+  entities: [User, Makale, Author, Slider, Announcement],
 });
