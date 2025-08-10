@@ -20,7 +20,7 @@ export default function HaberKarti({ haber, featured = false }) {
     haber.createdAt || haber.updatedAt || haber.date || haber.tarih || Date.now()
   ).toLocaleDateString("tr-TR");
 
-  const to = `/haber/${haber.id ?? ""}`;
+  const to = `/haber/${haber.slug ?? haber.id ?? ""}`;
 
   return (
     <Card variant="outlined" sx={{ height: "100%", display: "flex", flexDirection: "column" }}>

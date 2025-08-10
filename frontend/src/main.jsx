@@ -30,7 +30,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
             <Route index element={<HomePage />} />
             <Route path="kurumsal/tarihce" element={<TarihcePage />} />
             <Route path="kurumsal/yonetim-kurulu" element={<YonetimKuruluPage />} />
-            <Route path="haber/:id" element={<HaberDetayPage />} />
+            <Route path="haber/:slug" element={<HaberDetayPage />} />
             <Route path="*" element={<PlaceholderPage title="Sayfa Hazırlanıyor" />} />
           </Route>
 

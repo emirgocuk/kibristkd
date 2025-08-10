@@ -13,8 +13,13 @@ let Makale = class Makale {
     id;
     baslik;
     icerik;
+    // URL için otomatik dolduracağız, benzersiz
+    slug;
     kategori;
-    kapakResmi;
+    kapakResmi; // URL alanı istersek dursun
+    // BLOB depolama (kapak görseli)
+    kapakResmiBlob;
+    kapakResmiMime;
     status;
     createdBy;
     createdById;
@@ -34,6 +39,10 @@ __decorate([
     __metadata("design:type", String)
 ], Makale.prototype, "icerik", void 0);
 __decorate([
+    Column({ type: "varchar", length: 255, unique: true }),
+    __metadata("design:type", String)
+], Makale.prototype, "slug", void 0);
+__decorate([
     Column({ type: "varchar", length: 191, nullable: true, default: null }),
     __metadata("design:type", Object)
 ], Makale.prototype, "kategori", void 0);
@@ -41,6 +50,14 @@ __decorate([
     Column({ type: "varchar", length: 1024, nullable: true, default: null }),
     __metadata("design:type", Object)
 ], Makale.prototype, "kapakResmi", void 0);
+__decorate([
+    Column({ type: "longblob", nullable: true, select: false }),
+    __metadata("design:type", Object)
+], Makale.prototype, "kapakResmiBlob", void 0);
+__decorate([
+    Column({ type: "varchar", length: 128, nullable: true, default: null }),
+    __metadata("design:type", Object)
+], Makale.prototype, "kapakResmiMime", void 0);
 __decorate([
     Column({ type: "enum", enum: ["draft", "pending", "published"], default: "pending" }),
     __metadata("design:type", String)
