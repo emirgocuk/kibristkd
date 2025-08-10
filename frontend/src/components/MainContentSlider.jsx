@@ -7,7 +7,8 @@ import { Box, Typography } from '@mui/material';
 import HaberKarti from './HaberKarti';
 
 function MainContentSlider({ makaleler }) {
-  if (!makaleler || makaleler.length === 0) {
+  const items = Array.isArray(makaleler) ? makaleler : [];
+  if (items.length === 0) {
     return <Typography>Gösterilecek haber bulunmuyor.</Typography>;
   }
 
@@ -26,7 +27,7 @@ function MainContentSlider({ makaleler }) {
           },
         }}
       >
-        {makaleler.map((makale) => (
+        {items.map((makale) => (
           <SwiperSlide key={makale.id}>
             <HaberKarti
               id={makale.id}

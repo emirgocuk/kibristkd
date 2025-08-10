@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Grid, Box, Typography } from '@mui/material';
-import axios from 'axios';
+import http, { unwrap } from '../api/http';
 
 import HeroSlider from '@/components/HeroSlider';
 import MainContentSlider from '@/components/MainContentSlider';
@@ -15,11 +15,13 @@ const HomePage = () => {
     useEffect(() => {
         const fetchMakaleler = async () => {
             try {
-                const response = await axios.get('/api/makaleler');
-                setMakaleler(response.data);
+                const r = await http.get('/api/makaleler');
+                const items = unwrap(r, []);
+                setMakaleler(Array.isArray(items) ? items : []);
             } catch (err) {
                 setError('Makaleler yüklenirken bir sorun oluştu.');
                 console.error(err);
+                setMakaleler([]);
             } finally {
                 setLoading(false);
             }
