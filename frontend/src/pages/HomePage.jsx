@@ -1,356 +1,194 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Box, Button, Chip, Container, FormControl, Grid, IconButton, InputAdornment,
-  InputLabel, List, ListItem, ListItemAvatar, ListItemText, MenuItem, Paper,
-  Select, Skeleton, Stack, TextField, Typography, Avatar, Tooltip
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
-import RefreshRoundedIcon from '@mui/icons-material/RefreshRounded';
-import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded';
+import React from 'react';
+import { Box, Container, Grid, Paper, Typography, Link as MuiLink } from '@mui/material';
+import { Link } from 'react-router-dom';
 
-import http, { unwrap } from '../api/http';
+// Slider için Swiper bileşenlerini import ediyoruz
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Autoplay } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/navigation';
+
 import HeroSlider from '../components/HeroSlider';
 import Sidebar from '../components/Sidebar';
-import SectionTitle from '../components/SectionTitle';
-import HaberKarti from '../components/HaberKarti';
 
-const PAGE_SIZE = 8;
+// Örnek Makale Verileri
+const featuredArticle = {
+  id: 1,
+  title: 'Kıbrıs\'ın Tarihi Limanı: Girne Kalesi ve Batık Gemi Müzesi',
+  excerpt: 'Girne\'nin simgesi haline gelen tarihi kalesi, içerisinde barındırdığı ve dünyanın en eski batık gemilerinden biri olarak kabul edilen Batık Gemi Müzesi ile ziyaretçilerini binlerce yıllık bir tarih yolculuğuna çıkarıyor.',
+  author: 'Prof. Dr. Ata Atun',
+  date: '13 Ağustos 2025',
+  image: 'https://images.unsplash.com/photo-1623625345933-1a91393623a6?q=80&w=2070&auto=format&fit=crop',
+  slug: '/haber/girne-kalesi-ve-batik-gemi-muzesi'
+};
 
-const RibbonTitle = ({ children }) => (
-  <Box sx={{ mb: 1.25 }}>
-    <Box sx={{
-      display: 'inline-block', px: 1.25, py: 0.5, borderRadius: 0.5,
-      bgcolor: '#d32f2f', color: '#fff', fontWeight: 700, fontSize: 13, letterSpacing: 0.3, textTransform: 'uppercase'
-    }}>
-      {children}
-    </Box>
-  </Box>
-);
+const otherArticles = [
+  { id: 2, title: 'Lefkoşa\'nın Tarihi Dokusu: Büyük Han ve Selimiye Camii', author: 'Sabahattin İsmail', date: '11 Ağustos 2025', image: 'https://images.unsplash.com/photo-1601754593399-6316b8a7f722?q=80&w=1974&auto=format&fit=crop', slug: '/haber/lefkosanin-tarihi-dokusu' },
+  { id: 3, title: 'Karpaz\'ın Altın Kumları ve Özgür Eşekleri', author: 'Ayşe Güler', date: '9 Ağustos 2025', image: 'https://images.unsplash.com/photo-1599834562135-b6fc90e642ca?q=80&w=1935&auto=format&fit=crop', slug: '/haber/karpazin-altin-kumlari' },
+  { id: 4, title: 'Bellapais Manastırı: Gotik Mimarinin Eşsiz Örneği', author: 'Hasan İkizer', date: '7 Ağustos 2025', image: 'https://images.unsplash.com/photo-1562601579-599dec174238?q=80&w=1964&auto=format&fit=crop', slug: '/haber/bellapais-manastiri' },
+  { id: 5, title: 'Gazimağusa Surları ve Othello Kalesi\'nin Hikayesi', author: 'İsmail Bozkurt', date: '5 Ağustos 2025', image: 'https://images.unsplash.com/photo-1618503934778-3fe36304595a?q=80&w=2070&auto=format&fit=crop', slug: '/haber/gazimagusa-surlari' },
+];
 
-const SkeletonCard = ({ lines = 2 }) => (
-  <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 2 }}>
-    <Skeleton variant="rectangular" height={140} sx={{ borderRadius: 1, mb: 1.5 }} />
-    {Array.from({ length: lines }).map((_, i) => (
-      <Skeleton key={i} width={i ? '60%' : '85%'} />
-    ))}
-  </Box>
-);
+// Galeri Slider Verileri
+const galleryData = [
+    { id: 1, image: 'https://images.unsplash.com/photo-1628013835882-c6514a6ac050?q=80&w=1974&auto=format&fit=crop', text: "Kıbrıs'ın tescilli lezzeti Hellim, keçi ve koyun sütünden yapılan, hem taze hem de kızartılarak tüketilebilen eşsiz bir peynirdir." },
+    { id: 2, image: 'https://images.unsplash.com/photo-1551990872-6d55d7b09f1a?q=80&w=2070&auto=format&fit=crop', text: "Kıbrıs, Akdeniz'in en önemli Caretta Caretta ve Yeşil Kaplumbağa yuvalama alanlarından biridir." },
+    { id: 3, image: 'https://plus.unsplash.com/premium_photo-1679435434389-c58a8a4cff62?q=80&w=1974&auto=format&fit=crop', text: "UNESCO Somut Olmayan Kültürel Miras listesindeki Lefkara işi, Venedikliler döneminden beri süregelen geleneksel bir el sanatıdır." },
+    { id: 4, image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=1974&auto=format&fit=crop', text: "Sadece Kıbrıs'ta yetişen endemik bir bitki olan Medoş Lalesi, her yıl Mart ve Nisan aylarında açar." },
+    { id: 5, image: 'https://images.unsplash.com/photo-1622879539804-54145718e47d?q=80&w=2070&auto=format&fit=crop', text: "Beşparmak Dağları'ndaki St. Hilarion Kalesi'nin, Walt Disney'in Uyuyan Güzel şatosuna ilham verdiği söylenir." },
+];
+
+// Diğer makaleler için kart bileşeni
+function ArticleCard({ article }) {
+  return (
+    <Paper variant="outlined" sx={{ height: '100%', display: 'flex', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: 2 } }}>
+      <MuiLink component={Link} to={article.slug} underline="none" sx={{ display: 'flex', width: '100%', p: 2, color: 'inherit' }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={8}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+              <Typography variant="subtitle1" component="h3" fontWeight="700" sx={{ color: 'text.primary' }}>
+                {article.title}
+              </Typography>
+              <Box sx={{ mt: 1 }}>
+                <Typography component="span" variant="caption" fontWeight="bold">{article.author}</Typography>
+                <Typography component="span" variant="caption" color="text.secondary"> ・ {article.date}</Typography>
+              </Box>
+            </Box>
+          </Grid>
+          <Grid item xs={4}>
+            <Box
+              sx={{
+                width: '100%',
+                paddingTop: '100%', // 1:1 Aspect Ratio
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundImage: `url(${article.image})`,
+                borderRadius: 0.5,
+              }}
+            />
+          </Grid>
+        </Grid>
+      </MuiLink>
+    </Paper>
+  );
+}
+
+// Galeri Slider Bileşeni
+function GallerySlider() {
+    return (
+        <Box sx={{ py: 6, bgcolor: 'background.default' }}>
+            <Container maxWidth="lg">
+                <Typography variant="h4" component="h2" fontWeight="bold" align="center" gutterBottom>
+                    Kıbrıs'tan Manzaralar
+                </Typography>
+                <Swiper
+                    modules={[Navigation, Autoplay]}
+                    spaceBetween={30}
+                    slidesPerView={1}
+                    navigation
+                    loop={true}
+                    autoplay={{ delay: 4000, disableOnInteraction: false }}
+                    breakpoints={{
+                        600: { slidesPerView: 2 },
+                        900: { slidesPerView: 3 },
+                    }}
+                    style={{ '--swiper-navigation-color': '#fff', '--swiper-navigation-size': '30px' }}
+                >
+                    {galleryData.map((item) => (
+                        <SwiperSlide key={item.id}>
+                            <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', height: 350 }}>
+                                <Box
+                                    component="img"
+                                    src={item.image}
+                                    alt={item.text.substring(0, 20)}
+                                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                                <Box sx={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    left: 0,
+                                    right: 0,
+                                    p: 2,
+                                    color: 'white',
+                                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
+                                }}>
+                                    <Typography variant="body2">{item.text}</Typography>
+                                </Box>
+                            </Box>
+                        </SwiperSlide>
+                    ))}
+                </Swiper>
+            </Container>
+        </Box>
+    );
+}
+
 
 export default function HomePage() {
-  const [makaleler, setMakaleler] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]   = useState(null);
-
-  const [rawQuery, setRawQuery] = useState('');
-  const [query, setQuery] = useState('');
-  const [sort, setSort] = useState('newest'); // 'newest' | 'oldest'
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  const loadMoreRef = useRef(null);
-  const [showTop, setShowTop] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setQuery(rawQuery), 300);
-    return () => clearTimeout(t);
-  }, [rawQuery]);
-
-  const fetchMakaleler = async () => {
-    try {
-      setLoading(true); setError(null);
-      const data = await unwrap(http.get('/api/makaleler'));
-      const arr = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : []);
-      setMakaleler(arr);
-    } catch (e) {
-      console.error(e); setError('Makaleler yüklenirken bir sorun oluştu.');
-    } finally { setLoading(false); }
-  };
-  useEffect(() => { fetchMakaleler(); }, []);
-
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
-    const ob = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) setVisibleCount((c) => c + PAGE_SIZE);
-    }, { rootMargin: '200px' });
-    ob.observe(loadMoreRef.current);
-    return () => ob.disconnect();
-  }, [loadMoreRef.current]);
-
-  useEffect(() => {
-    const onScroll = () => setShowTop(window.scrollY > 600);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const normalize = (v) => (v || '').toString().toLowerCase();
-  const refinedList = useMemo(() => {
-    let list = Array.isArray(makaleler) ? [...makaleler] : [];
-    if (query.trim()) {
-      const q = normalize(query);
-      list = list.filter((item) => {
-        const title = normalize(item.title || item.baslik);
-        const content = normalize(item.content || item.icerik || item.body);
-        const tags = (item.tags || []).map(normalize).join(' ');
-        return title.includes(q) || content.includes(q) || tags.includes(q);
-      });
-    }
-    list.sort((a, b) => {
-      const ta = new Date(a.createdAt || a.updatedAt || a.date || a.tarih || 0).getTime();
-      const tb = new Date(b.createdAt || b.updatedAt || b.date || b.tarih || 0).getTime();
-      return sort === 'newest' ? tb - ta : ta - tb;
-    });
-    return list;
-  }, [makaleler, query, sort]);
-
-  const featured = refinedList[0];
-  const rest = refinedList.slice(1, visibleCount);
-
-  const cat = (m) => (m.category || m.kategori || '').toString().trim();
-  const byCat = (name, take = 5) =>
-    refinedList.filter((m) => cat(m) === name).slice(0, take);
-
-  const LEFT_BLOCKS = [
-    { title: 'Basında KKTC', key: 'Basında KKTC', take: 6, style: 'table' },
-    { title: 'Kamu Uygulamaları', key: 'Kamu Uygulamaları', take: 4, style: 'two-col' },
-    { title: 'Etkinlikler', key: 'Etkinlikler', take: 3, style: 'events' },
-    { title: 'Kıbrıs’la İlgili Tavsiyeler', key: 'Kıbrıs’la İlgili Tavsiyeler', take: 2, style: 'cards' },
-    { title: 'Kıbrıs Yemekleri', key: 'Kıbrıs Yemekleri', take: 2, style: 'cards' },
-    { title: 'Kıbrıs Türk Kültürü', key: 'Kıbrıs Türk Kültürü', take: 4, style: 'grid4' },
-  ];
-
-  const clearAll = () => { setRawQuery(''); setQuery(''); setSort('newest'); setVisibleCount(PAGE_SIZE); };
-
-  const bannerImg = '/slide1.jpg';
-  const pickTitle = (m) => (m.title || m.baslik || 'Başlık').toString();
-
   return (
     <Box>
       <HeroSlider />
 
-      {/* üst geniş görsel */}
-      <Container maxWidth="lg" sx={{ mt: 3 }}>
-        <Paper
-          elevation={0}
-          sx={{
-            position: 'relative', borderRadius: 2, overflow: 'hidden',
-            border: '1px solid', borderColor: 'divider',
-            height: { xs: 180, sm: 260, md: 320 },
-            backgroundImage: `url(${bannerImg})`,
-            backgroundSize: 'cover', backgroundPosition: 'center',
-          }}
-        >
-          <Box sx={{ position: 'absolute', inset: 0,
-            background: 'linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.55))' }} />
-          <Stack position="absolute" bottom={16} left={16} right={16} spacing={1}>
-            <RibbonTitle>Haberler</RibbonTitle>
-            <Typography variant="h5" sx={{ color: '#fff', textShadow: '0 2px 8px rgba(0,0,0,.5)' }}>
-              Gündemden Öne Çıkanlar
-            </Typography>
-          </Stack>
-        </Paper>
-      </Container>
-
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+      <Container maxWidth="lg" sx={{ my: 4 }}>
         <Grid container spacing={4}>
-          {/* sol sütun */}
+          {/* Sol Sütun: Makaleler */}
           <Grid item xs={12} md={8}>
-            {/* arama/sırala */}
-          
-
-            {/* liste */}
-            {loading ? (
-              <Grid container spacing={2}>
-                <Grid item xs={12}><SkeletonCard lines={3} /></Grid>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Grid item xs={12} sm={6} key={i}><SkeletonCard /></Grid>
-                ))}
-              </Grid>
-            ) : error ? (
-              <Paper sx={{ p: 3, border: '1px dashed', borderColor: 'error.light' }}>
-                <Typography color="error">{error}</Typography>
-                <Button sx={{ mt: 1 }} variant="contained" startIcon={<RefreshRoundedIcon />} onClick={fetchMakaleler}>
-                  Tekrar Dene
-                </Button>
-              </Paper>
-            ) : refinedList.length === 0 ? (
-              <Paper sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="h6">Ana sayfada gösterilecek haber bulunmuyor</Typography>
-                <Button sx={{ mt: 1 }} onClick={fetchMakaleler} startIcon={<RefreshRoundedIcon />}>Yenile</Button>
-              </Paper>
-            ) : (
-              <Box>
-                {featured && (
-                  <Box sx={{ mb: 2, p: 0, borderRadius: 2, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                    <HaberKarti haber={featured} featured />
+            {/* Öne Çıkan Makale */}
+            <Paper variant="outlined" sx={{ p: 3, mb: 4 }}>
+              <Grid container spacing={3} alignItems="center">
+                <Grid item xs={12} sm={8}>
+                  <Typography variant="h4" component="h2" fontWeight="800" gutterBottom>
+                    <MuiLink component={Link} to={featuredArticle.slug} color="inherit" underline="hover">
+                      {featuredArticle.title}
+                    </MuiLink>
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" paragraph>
+                    {featuredArticle.excerpt}
+                  </Typography>
+                  <Box>
+                    <Typography component="span" variant="body2" fontWeight="bold">{featuredArticle.author}</Typography>
+                    <Typography component="span" variant="body2" color="text.secondary"> ・ {featuredArticle.date}</Typography>
                   </Box>
-                )}
-                <Grid container spacing={2}>
-                  {rest.slice(0, 6).map((haber) => (
-                    <Grid item xs={12} sm={6} key={haber.id}>
-                      <HaberKarti haber={haber} />
-                    </Grid>
-                  ))}
                 </Grid>
-              </Box>
-            )}
+                <Grid item xs={12} sm={4}>
+                  <Box
+                    component="img"
+                    src={featuredArticle.image}
+                    alt={featuredArticle.title}
+                    sx={{
+                      width: '100%',
+                      height: 'auto',
+                      aspectRatio: '1 / 1',
+                      objectFit: 'cover',
+                      borderRadius: 1,
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
 
-            {/* kategori blokları */}
-            <Box sx={{ mt: 4 }}>
-              {LEFT_BLOCKS.map((blk) => {
-                const items = byCat(blk.key, blk.take);
-                if (loading) {
-                  return (
-                    <Box key={blk.key} sx={{ mb: 3 }}>
-                      <RibbonTitle>{blk.title}</RibbonTitle>
-                      <Grid container spacing={2}>
-                        {Array.from({ length: blk.style === 'grid4' ? 4 : 3 }).map((_, i) => (
-                          <Grid key={i} item xs={12} sm={blk.style === 'two-col' || blk.style === 'cards' ? 6 : 12}>
-                            <SkeletonCard />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </Box>
-                  );
-                }
-                if (!items.length) return null;
-
-                return (
-                  <Box key={blk.key} sx={{ mb: 3 }}>
-                    <RibbonTitle>{blk.title}</RibbonTitle>
-
-                    {blk.style === 'table' && (
-                      <Paper variant="outlined" sx={{ overflow: 'hidden' }}>
-                        {items.map((m) => (
-                          <Box
-                            key={m.id}
-                            sx={{
-                              px: 2, py: 1.25, display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center',
-                              '&:not(:last-of-type)': { borderBottom: '1px solid', borderColor: 'divider' },
-                              '&:hover': { bgcolor: 'action.hover' },
-                            }}
-                          >
-                            <Typography variant="body1" fontWeight={600}>{pickTitle(m)}</Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {new Date(m.createdAt || m.updatedAt || m.date || m.tarih || Date.now()).toLocaleDateString('tr-TR')}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Paper>
-                    )}
-
-                    {blk.style === 'two-col' && (
-                      <Grid container spacing={2}>
-                        {items.map((m) => (
-                          <Grid key={m.id} item xs={12} sm={6}>
-                            <HaberKarti haber={m} />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
-
-                    {blk.style === 'events' && (
-                      <Paper variant="outlined">
-                        {items.map((m) => {
-                          const d = new Date(m.date || m.createdAt || m.tarih || Date.now());
-                          const day = d.toLocaleDateString('tr-TR', { day: '2-digit' });
-                          const mon = d.toLocaleDateString('tr-TR', { month: 'short' }).toUpperCase();
-                          return (
-                            <Box key={m.id} sx={{ display: 'flex', alignItems: 'stretch',
-                              '&:not(:last-of-type)': { borderBottom: '1px solid', borderColor: 'divider' } }}>
-                              <Box sx={{
-                                width: 84, minWidth: 84, textAlign: 'center',
-                                borderRight: '1px solid', borderColor: 'divider', bgcolor: 'background.default', py: 1.5,
-                              }}>
-                                <Typography variant="h5" fontWeight={800}>{day}</Typography>
-                                <Typography variant="caption" color="text.secondary">{mon}</Typography>
-                              </Box>
-                              <Box sx={{ p: 1.5, flex: 1 }}>
-                                <Typography variant="subtitle1" fontWeight={700}>{pickTitle(m)}</Typography>
-                                <Typography variant="body2" color="text.secondary" noWrap>
-                                  {(m.content || m.icerik || m.body || '').toString()}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          );
-                        })}
-                      </Paper>
-                    )}
-
-                    {blk.style === 'cards' && (
-                      <Grid container spacing={2}>
-                        {items.map((m) => (
-                          <Grid key={m.id} item xs={12} sm={6}>
-                            <HaberKarti haber={m} />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
-
-                    {blk.style === 'grid4' && (
-                      <Grid container spacing={2}>
-                        {items.map((m) => (
-                          <Grid key={m.id} item xs={12} sm={6}>
-                            <HaberKarti haber={m} />
-                          </Grid>
-                        ))}
-                      </Grid>
-                    )}
-                  </Box>
-                );
-              })}
-            </Box>
-
-            {/* daha fazla yükle */}
-            {visibleCount < refinedList.length && (
-              <>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                  <Button
-                    onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                    variant="outlined" endIcon={<ExpandMoreRoundedIcon />} sx={{ borderRadius: 2, px: 3 }}
-                  >
-                    Daha Fazla Yükle
-                  </Button>
-                </Box>
-                <div ref={loadMoreRef} />
-              </>
-            )}
+            {/* Diğer Makaleler */}
+            <Grid container spacing={3}>
+              {otherArticles.map((article) => (
+                <Grid item xs={12} sm={6} key={article.id}>
+                  <ArticleCard article={article} />
+                </Grid>
+              ))}
+            </Grid>
           </Grid>
 
-          {/* sağ sütun */}
+          {/* Sağ Sütun: Sidebar */}
           <Grid item xs={12} md={4}>
             <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
-              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-                <RibbonTitle>Kitap Tanıtımı</RibbonTitle>
-                <Box sx={{
-                  borderRadius: 1, overflow: 'hidden', height: 160,
-                  backgroundImage: `url(${bannerImg})`, backgroundSize: 'cover', backgroundPosition: 'center', mb: 1.5
-                }} />
-                <Typography variant="subtitle1" fontWeight={700}>Kıbrıs Üzerine Notlar</Typography>
-                <Typography variant="body2" color="text.secondary">Yeni çıkanlar: kültür, siyaset ve tarih okumaları.</Typography>
-                <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                  <Chip label="Tarih" size="small" /><Chip label="Kültür" size="small" />
-                </Stack>
-              </Paper>
               <Sidebar />
             </Box>
           </Grid>
         </Grid>
       </Container>
+      
+      {/* Yeni Galeri Slider Bölümü */}
+      <GallerySlider />
 
-      {/* başa dön */}
-      {showTop && (
-        <Tooltip title="Başa dön">
-          <IconButton
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            sx={{
-              position: 'fixed', bottom: { xs: 16, sm: 24 }, right: { xs: 16, sm: 24 },
-              bgcolor: 'primary.main', color: 'primary.contrastText', '&:hover': { bgcolor: 'primary.dark' }, boxShadow: 4,
-            }}
-          >
-            <ArrowUpwardRoundedIcon />
-          </IconButton>
-        </Tooltip>
-      )}
     </Box>
   );
 }

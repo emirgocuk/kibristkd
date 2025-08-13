@@ -31,6 +31,7 @@ const theme = createTheme({
       styleOverrides: {
         root: ({ theme }) => ({
           backgroundColor: theme.palette.primary.main,
+          borderRadius: 0,
         }),
       }
     },

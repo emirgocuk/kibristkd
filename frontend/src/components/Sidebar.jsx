@@ -1,6 +1,5 @@
 import React from 'react';
-import { Box, Typography, TextField, IconButton, List, ListItem, ListItemText, Divider, Avatar, Paper } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { Box, Typography, List, ListItem, ListItemText, Divider, Avatar, Paper } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'; // Yazarlar için ikon
 
 // Başlıklar için ortak stil
@@ -34,23 +33,6 @@ const columnists = [
 function Sidebar() {
   return (
     <Box component={Paper} elevation={0} variant="outlined" sx={{ p: 3 }}>
-      {/* Site İçi Arama */}
-      <Box sx={{ mb: 4 }}>
-        <SectionTitle>Site İçi Arama</SectionTitle>
-        <Box component="form" sx={{ display: 'flex', alignItems: 'center' }}>
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="Aradığınız kelime..."
-            fullWidth
-            sx={{ mr: 1 }}
-          />
-          <IconButton type="submit" sx={{ p: '10px', backgroundColor: 'primary.main', color: 'white', '&:hover': {backgroundColor: '#b71c1c'} }}>
-            <SearchIcon />
-          </IconButton>
-        </Box>
-      </Box>
-
       {/* Duyurular */}
       <Box sx={{ mb: 4 }}>
         <SectionTitle>Duyurular</SectionTitle>
