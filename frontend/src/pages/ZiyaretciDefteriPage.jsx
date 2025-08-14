@@ -1,31 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { Container, Typography, Paper, Box, TextField, Button, Divider, IconButton, Chip } from '@mui/material';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import SectionTitle from '/src/components/SectionTitle.jsx';
 
-// --- İkon (MUI Icon yerine) ---
-const FavoriteIcon = () => (
-    <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd"></path></svg>
-);
-
-// Form girdileri için yeniden kullanılabilir bileşenler
-const FormInput = ({ label, ...props }) => (
-    <div>
-        <label htmlFor={props.id} className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
-        <input {...props} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-    </div>
-);
-
-const FormTextarea = ({ label, ...props }) => (
-     <div>
-        <label htmlFor={props.id} className="mb-1 block text-sm font-medium text-gray-700">{label}</label>
-        <textarea {...props} className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" />
-    </div>
-);
-
-
-// Örnek Ziyaretçi Defteri Mesajları (değişiklik yok)
+// Örnek Ziyaretçi Defteri Mesajları
 const sampleMessages = [
-    { id: 1, name: 'Ahmet Yılmaz', message: 'Derneğinizin çalışmalarını uzun yıllardır takip ediyorum. Kıbrıs kültürünü yaşatma konusundaki emekleriniz için minnettarım.', date: '12 Ağustos 2025', likes: 152 },
-    // ...diğer mesajlar
+  { id: 1, name: 'Ahmet Yılmaz', message: 'Derneğinizin çalışmalarını uzun yıllardır takip ediyorum. Kıbrıs kültürünü yaşatma konusundaki emekleriniz için minnettarım.', date: '12 Ağustos 2025', likes: 152 },
+  { id: 2, name: 'Ayşe Kaya', message: 'Geçen ayki kültür etkinliğiniz harikaydı! Özellikle gençlerin katılımı beni çok umutlandırdı. Teşekkürler.', date: '11 Ağustos 2025', likes: 98 },
+  { id: 3, name: 'Hasan Veli', message: 'Ankara\'da Kıbrıs\'tan bir köşe bulmak çok güzel. Başarılarınızın devamını dilerim.', date: '10 Ağustos 2025', likes: 210 },
+  { id: 4, name: 'Fatma Özdemir', message: 'Web siteniz çok güzel ve bilgilendirici olmuş. Emeği geçen herkesi tebrik ederim.', date: '9 Ağustos 2025', likes: 75 },
+  { id: 5, name: 'Mustafa Arslan', message: 'Burs programınız sayesinde eğitim hayatıma devam edebildim. Size ve tüm bağışçılara ne kadar teşekkür etsem az.', date: '8 Ağustos 2025', likes: 350 },
+  { id: 6, name: 'Zeynep Çelik', message: 'Kıbrıs uyuşmazlığı hakkındaki yayınlarınız, konuyu anlamak isteyenler için paha biçilmez bir kaynak.', date: '7 Ağustos 2025', likes: 120 },
+  { id: 7, name: 'Mehmet Öztürk', message: 'Dernek binanızdaki kütüphaneden çok faydalandım. Böyle bir arşivi bizlere sunduğunuz için teşekkürler.', date: '6 Ağustos 2025', likes: 45 },
+  { id: 8, name: 'Elif Aydın', message: 'Londra\'dan selamlar! Yurt dışındaki Kıbrıs Türkleri olarak çalışmalarınızı gururla takip ediyoruz.', date: '5 Ağustos 2025', likes: 188 },
+  { id: 9, name: 'Ali Can', message: 'Genç bir Kıbrıslı olarak, köklerimizi ve kültürümüzü bu denli sahiplenmeniz beni çok mutlu ediyor.', date: '4 Ağustos 2025', likes: 66 },
+  { id: 10, name: 'Meryem Şahin', message: 'Her zaman yanınızdayız!', date: '3 Ağustos 2025', likes: 82 },
+  { id: 11, name: 'Kemal Yıldız', message: 'Milli mücadele ruhunu her zaman canlı tutuyorsunuz, var olun!', date: '2 Ağustos 2025', likes: 199 },
+  { id: 12, name: 'Yasemin Demir', message: 'Anılarımızı ve kültürümüzü gelecek nesillere aktarmak çok önemli. Bu misyonu üstlendiğiniz için teşekkürler.', date: '1 Ağustos 2025', likes: 143 },
 ];
 
 const MESSAGES_PER_PAGE = 6;
@@ -36,6 +27,7 @@ function ZiyaretciDefteriPage() {
   const [visibleCount, setVisibleCount] = useState(MESSAGES_PER_PAGE);
 
   useEffect(() => {
+    // Mesajları en çok beğenilenden en aza doğru sırala
     const sortedMessages = [...sampleMessages].sort((a, b) => b.likes - a.likes);
     setMessages(sortedMessages);
     setDisplayedMessages(sortedMessages.slice(0, MESSAGES_PER_PAGE));
@@ -48,57 +40,82 @@ function ZiyaretciDefteriPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-16">
+    <Container maxWidth="md" sx={{ py: 8 }}>
       {/* Mesaj Yazma Alanı */}
-      <div className="mb-12 rounded-lg border border-gray-200 bg-white p-6 shadow-sm md:p-8">
+      <Paper variant="outlined" sx={{ p: { xs: 3, md: 5 }, mb: 6 }}>
         <SectionTitle>Ziyaretçi Defteri</SectionTitle>
-        <div className="mt-4">
-          <h2 className="mb-1 text-2xl font-bold text-gray-800">Siz de anınızı bırakın.</h2>
-          <p className="mb-6 text-gray-600">Anı defterinde sizi de okuyalım.</p>
+        <Box>
+          <Typography variant="h5" component="p" sx={{ fontWeight: 'bold', mb: 1 }}>
+            Siz de anınızı bırakın.
+          </Typography>
+          <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 4 }}>
+            Anı defterinde sizi de okuyalım.
+          </Typography>
           
-          <form noValidate autoComplete="off" className="space-y-6">
-            <FormInput id="name" label="Adınız Soyadınız" type="text" required />
-            <FormTextarea id="message" label="Mesajınız" required rows={8} />
-            <div>
-              <button type="submit" className="rounded-md bg-blue-600 px-6 py-3 text-lg font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Gönder
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+          <Box component="form" noValidate autoComplete="off">
+            <TextField
+              fullWidth
+              label="Adınız Soyadınız"
+              variant="outlined"
+              required
+              sx={{ mb: 3 }}
+            />
+            <TextField
+              fullWidth
+              label="Mesajınız"
+              variant="outlined"
+              required
+              multiline
+              rows={8}
+              sx={{ mb: 3 }}
+            />
+            <Button variant="contained" color="primary" size="large" type="submit">
+              Gönder
+            </Button>
+          </Box>
+        </Box>
+      </Paper>
 
       {/* Mesaj Listeleme Alanı */}
-      <div>
+      <Box>
         <SectionTitle>Anılar</SectionTitle>
-        <div className="mt-4 space-y-4">
-          {displayedMessages.map((item) => (
-            <div key={item.id} className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-              <div className="mb-2 flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-gray-800">{item.name}</p>
-                  <p className="text-xs text-gray-500">{item.date}</p>
-                </div>
-                {/* Chip -> div */}
-                <div className="inline-flex items-center space-x-1 rounded-full border border-blue-500 px-2 py-1 text-sm font-bold text-blue-600">
-                  <FavoriteIcon />
-                  <span>{item.likes}</span>
-                </div>
-              </div>
-              <p className="text-gray-700">{item.message}</p>
-            </div>
-          ))}
+        {displayedMessages.map((item, index) => (
+          <React.Fragment key={item.id}>
+            <Paper elevation={0} sx={{ p: 3, mb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Box>
+                  <Typography variant="h6" component="p" sx={{ fontWeight: 'bold' }}>
+                    {item.name}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.date}
+                  </Typography>
+                </Box>
+                <Chip
+                    icon={<FavoriteIcon />}
+                    label={item.likes}
+                    variant="outlined"
+                    color="primary"
+                    sx={{ fontWeight: 'bold' }}
+                />
+              </Box>
+              <Typography variant="body1" color="text.secondary">
+                {item.message}
+              </Typography>
+            </Paper>
+            {index < displayedMessages.length - 1 && <Divider sx={{ my: 1 }} />}
+          </React.Fragment>
+        ))}
 
-          {displayedMessages.length < messages.length && (
-            <div className="pt-6 text-center">
-              <button onClick={handleLoadMore} className="rounded-md border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Daha Fazla Yükle
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+        {displayedMessages.length < messages.length && (
+          <Box sx={{ textAlign: 'center', mt: 4 }}>
+            <Button variant="outlined" size="large" onClick={handleLoadMore}>
+              Daha Fazla Yükle
+            </Button>
+          </Box>
+        )}
+      </Box>
+    </Container>
   );
 }
 

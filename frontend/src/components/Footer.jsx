@@ -1,5 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+<<<<<<< HEAD
+=======
+import FacebookIcon from '@mui/icons-material/Facebook';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import YouTubeIcon from '@mui/icons-material/YouTube';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+
+>>>>>>> parent of 43808ce (Navbardaki sayfalar tasarlandı)
 import logo from '../photos/logo.png';
 
 // --- İkonlar ---
@@ -52,6 +62,7 @@ const footerLinks = [
 
 function Footer() {
   return (
+<<<<<<< HEAD
     <footer className="bg-[#2d2d2d] py-12 text-gray-400">
       <div className="container mx-auto max-w-screen-lg px-4">
         {/* Ana Izgara Yapısı */}
@@ -80,6 +91,30 @@ function Footer() {
           
           {/* Sütun 2: Haberler */}
           <div>
+=======
+    <Box sx={{ bgcolor: '#2d2d2d', color: 'grey.400', py: 6 }}>
+      <Container maxWidth="lg">
+        <Grid container spacing={5}>
+          <Grid item xs={12} md={3}>
+            <img src={logo} alt="Logo" style={{ height: '50px', marginBottom: '24px', marginTop: '10px' }} />
+            <List disablePadding>
+                <ListItem disablePadding sx={{ mb: 2 }}>
+                    <ListItemIcon sx={{ minWidth: '40px', color: 'primary.main' }}><LocationOnIcon /></ListItemIcon>
+                    <ListItemText primary="Halk Sokak No:17/2 Yenişehir Çankaya Ankara" primaryTypographyProps={{ variant: 'body1', color: 'grey.300' }} />
+                </ListItem>
+                <ListItem disablePadding sx={{ mb: 2 }}>
+                    <ListItemIcon sx={{ minWidth: '40px', color: 'primary.main' }}><PhoneIcon /></ListItemIcon>
+                    <ListItemText primary="0 (312) 434 14 12" primaryTypographyProps={{ variant: 'body1', color: 'grey.300' }} />
+                </ListItem>
+            </List>
+            <Typography variant="h6" fontWeight="bold" sx={{ mb: 1, mt: 3 }}>Sosyal Hesaplar</Typography>
+            <Box>
+              <IconButton sx={{ color: 'white', bgcolor: '#3b5998', mr: 1, '&:hover': { bgcolor: '#2d4373' } }}><FacebookIcon /></IconButton>
+              <IconButton sx={{ color: 'white', bgcolor: '#1DA1F2', mr: 1, '&:hover': { bgcolor: '#0c85d0' } }}><TwitterIcon /></IconButton>
+            </Box>
+          </Grid>
+          <Grid item xs={12} md={3}>
+>>>>>>> parent of 43808ce (Navbardaki sayfalar tasarlandı)
             <FooterTitle>Haberler</FooterTitle>
             <ul className="space-y-4">
               {recentNews.map((news, index) => (
@@ -111,6 +146,7 @@ function Footer() {
           {/* Sütun 4: Galeriler */}
           <div>
             <FooterTitle>Galeriler</FooterTitle>
+<<<<<<< HEAD
             <ul className="space-y-3">
               <li className="border-b border-gray-700 pb-3">
                 <Link to="/foto-galeri" className="transition-colors duration-300 hover:text-white hover:underline">Foto Galeri</Link>
@@ -137,3 +173,16 @@ function Footer() {
 }
 
 export default Footer;
+=======
+             <Box component="ul" sx={{ m: 0, p: 0, listStyle: 'none' }}>
+                <Box component="li" sx={{ mb: 1.5, borderBottom: '1px solid #444', pb: 1.5 }}><MuiLink component={Link} to="/foto-galeri" color="inherit" underline="hover">Foto Galeri</MuiLink></Box>
+                 <Box component="li" sx={{ mb: 1.5, borderBottom: '1px solid #444', pb: 1.5 }}><MuiLink component={Link} to="/video-galeri" color="inherit" underline="hover">Video Galeri</MuiLink></Box>
+            </Box>
+          </Grid>
+        </Grid>
+      </Container>
+    </Box>
+  );
+}
+export default Footer;
+>>>>>>> parent of 43808ce (Navbardaki sayfalar tasarlandı)

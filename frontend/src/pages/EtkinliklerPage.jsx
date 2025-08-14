@@ -1,16 +1,9 @@
 import React from 'react';
-import SectionTitle from '/src/components/SectionTitle.jsx'; // Daha önce dönüştürdüğümüz bileşen
+import { Box, Container, Grid, Typography, Paper } from '@mui/material';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import SectionTitle from '/src/components/SectionTitle.jsx';
 
-// --- İkon ---
-// LocationOnIcon yerine geçecek basit SVG
-const LocationOnIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-    </svg>
-);
-
-// Örnek Etkinlik Verileri (değişiklik yok)
+// Örnek Etkinlik Verileri
 const eventsData = [
   {
     title: 'Kıbrıs Kültür Gecesi ve Fotoğraf Sergisi',
@@ -19,59 +12,81 @@ const eventsData = [
     date: '25 Ekim 2025 - 19:00',
     imageUrl: 'https://images.unsplash.com/photo-1549492423-4002122c3855?q=80&w=2070&auto=format&fit=crop'
   },
-  // ...diğer etkinlikler
+  {
+    title: 'Tarih Söyleşileri: Annan Planı\'nın Perde Arkası',
+    description: 'Dönemin önemli isimlerinin ve uzman akademisyenlerin katılımıyla, Kıbrıs\'ın yakın tarihine damga vuran Annan Planı sürecini tüm detaylarıyla masaya yatırıyoruz. Soru-cevap bölümüyle interaktif bir söyleşi sizleri bekliyor.',
+    location: 'Milli Kütüphane Konferans Salonu',
+    date: '12 Kasım 2025 - 14:00',
+    imageUrl: 'https://images.unsplash.com/photo-1587825140708-df876c12b44e?q=80&w=2070&auto=format&fit=crop'
+  },
+  {
+    title: 'Geleneksel Lefkara El Sanatları Atölyesi',
+    description: 'UNESCO Somut Olmayan Kültür Miras listesinde yer alan Lefkara işinin inceliklerini ustalarından öğrenme fırsatı. Kendi el emeğinizle bu asırlık sanata dokunmak için atölyemize katılın.',
+    location: 'İstanbul Şubesi Etkinlik Salonu',
+    date: '05 Aralık 2025 - 10:00',
+    imageUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=2070&auto=format&fit=crop'
+  }
 ];
 
 // Tek bir etkinlik kartı bileşeni
 function EventCard({ event }) {
   return (
-    // Ana sarmalayıcı, kartlar arasına dikey boşluk ekler
-    <section className="py-8">
-      <div className="container mx-auto max-w-screen-lg px-4">
-        {/* Paper -> div, elevation -> shadow, p -> p */}
-        <div className="flex w-full flex-col overflow-hidden rounded-lg bg-white p-4 shadow-lg md:min-h-[70vh] md:flex-row md:p-8">
-          
-          {/* Sol Taraf: Metin İçerikleri */}
-          {/* Grid item -> div */}
-          <div className="flex w-full flex-col md:w-1/2">
-            <SectionTitle>{event.title}</SectionTitle>
-            <p className="my-2 flex-grow text-base text-gray-600">
-              {event.description}
-            </p>
-            <div className="mt-auto text-right">
-              <p className="inline-flex items-center font-bold text-blue-600">
-                <LocationOnIcon /> 
-                <span className="ml-2">{event.location}</span>
-              </p>
-              <p className="text-sm text-gray-500">
-                {event.date}
-              </p>
-            </div>
-          </div>
-          
-          {/* Sağ Taraf: Görsel */}
-          <div className="mt-6 w-full md:mt-0 md:w-1/2 md:pl-8">
-            <img
-              src={event.imageUrl}
-              alt={event.title}
-              className="h-full w-full rounded-md object-cover"
-            />
-          </div>
-        </div>
-      </div>
-    </section>
+    // Bu Box artık sadece kartlar arası boşluk sağlar
+    <Box sx={{ py: 4 }}>
+      <Container maxWidth="lg">
+        <Paper elevation={3} sx={{
+          p: { xs: 2, md: 4 },
+          // KARTIN KENDİSİNE MİNİMUM YÜKSEKLİK VERİLDİ
+          minHeight: { md: '70vh' },
+          display: 'flex',
+          width: '100%'
+        }}>
+          <Grid container spacing={4} alignItems="stretch">
+            {/* Sol Taraf: Metin İçerikleri */}
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <SectionTitle>{event.title}</SectionTitle>
+                <Typography variant="body1" color="text.secondary" paragraph sx={{ flexGrow: 1, my: 2 }}>
+                  {event.description}
+                </Typography>
+                <Box sx={{ mt: 'auto', textAlign: 'right' }}>
+                  <Typography variant="subtitle1" sx={{ display: 'inline-flex', alignItems: 'center', color: 'primary.main', fontWeight: 'bold' }}>
+                    <LocationOnIcon sx={{ mr: 1 }} /> {event.location}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {event.date}
+                  </Typography>
+                </Box>
+              </Box>
+            </Grid>
+            {/* Sağ Taraf: Görsel */}
+            <Grid item xs={12} md={6}>
+              <Box
+                component="img"
+                src={event.imageUrl}
+                alt={event.title}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: 2
+                }}
+              />
+            </Grid>
+          </Grid>
+        </Paper>
+      </Container>
+    </Box>
   );
 }
 
-// Ana Sayfa Bileşeni
 function EtkinliklerPage() {
   return (
-    // Box -> div
-    <div>
+    <Box>
       {eventsData.map((event, index) => (
         <EventCard key={index} event={event} />
       ))}
-    </div>
+    </Box>
   );
 }
 
