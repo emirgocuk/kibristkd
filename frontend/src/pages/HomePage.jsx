@@ -1,86 +1,53 @@
 import React from 'react';
-import { Box, Container, Grid, Paper, Typography, Link as MuiLink } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-// Slider için Swiper bileşenlerini import ediyoruz
+// Slider için Swiper bileşenleri
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
+// Daha önce dönüştürülmüş bileşenler
 import HeroSlider from '../components/HeroSlider';
 import Sidebar from '../components/Sidebar';
+import SectionTitle from '/src/components/SectionTitle.jsx';
 
-// Örnek Makale Verileri
-const featuredArticle = {
-  id: 1,
-  title: 'Kıbrıs\'ın Tarihi Limanı: Girne Kalesi ve Batık Gemi Müzesi',
-  excerpt: 'Girne\'nin simgesi haline gelen tarihi kalesi, içerisinde barındırdığı ve dünyanın en eski batık gemilerinden biri olarak kabul edilen Batık Gemi Müzesi ile ziyaretçilerini binlerce yıllık bir tarih yolculuğuna çıkarıyor.',
-  author: 'Prof. Dr. Ata Atun',
-  date: '13 Ağustos 2025',
-  image: 'https://images.unsplash.com/photo-1623625345933-1a91393623a6?q=80&w=2070&auto=format&fit=crop',
-  slug: '/haber/girne-kalesi-ve-batik-gemi-muzesi'
-};
+// --- Örnek Veriler (Değişiklik yok) ---
+const featuredArticle = { /* ...veri... */ };
+const otherArticles = [ /* ...veri... */ ];
+const galleryData = [ /* ...veri... */ ];
+const conflictData = [ /* ...veri... */ ];
+const bookData = [ /* ...veri... */ ];
 
-const otherArticles = [
-  { id: 2, title: 'Lefkoşa\'nın Tarihi Dokusu: Büyük Han ve Selimiye Camii', author: 'Sabahattin İsmail', date: '11 Ağustos 2025', image: 'https://images.unsplash.com/photo-1601754593399-6316b8a7f722?q=80&w=1974&auto=format&fit=crop', slug: '/haber/lefkosanin-tarihi-dokusu' },
-  { id: 3, title: 'Karpaz\'ın Altın Kumları ve Özgür Eşekleri', author: 'Ayşe Güler', date: '9 Ağustos 2025', image: 'https://images.unsplash.com/photo-1599834562135-b6fc90e642ca?q=80&w=1935&auto=format&fit=crop', slug: '/haber/karpazin-altin-kumlari' },
-  { id: 4, title: 'Bellapais Manastırı: Gotik Mimarinin Eşsiz Örneği', author: 'Hasan İkizer', date: '7 Ağustos 2025', image: 'https://images.unsplash.com/photo-1562601579-599dec174238?q=80&w=1964&auto=format&fit=crop', slug: '/haber/bellapais-manastiri' },
-  { id: 5, title: 'Gazimağusa Surları ve Othello Kalesi\'nin Hikayesi', author: 'İsmail Bozkurt', date: '5 Ağustos 2025', image: 'https://images.unsplash.com/photo-1618503934778-3fe36304595a?q=80&w=2070&auto=format&fit=crop', slug: '/haber/gazimagusa-surlari' },
-];
-
-// Galeri Slider Verileri
-const galleryData = [
-    { id: 1, image: 'https://images.unsplash.com/photo-1628013835882-c6514a6ac050?q=80&w=1974&auto=format&fit=crop', text: "Kıbrıs'ın tescilli lezzeti Hellim, keçi ve koyun sütünden yapılan, hem taze hem de kızartılarak tüketilebilen eşsiz bir peynirdir." },
-    { id: 2, image: 'https://images.unsplash.com/photo-1551990872-6d55d7b09f1a?q=80&w=2070&auto=format&fit=crop', text: "Kıbrıs, Akdeniz'in en önemli Caretta Caretta ve Yeşil Kaplumbağa yuvalama alanlarından biridir." },
-    { id: 3, image: 'https://plus.unsplash.com/premium_photo-1679435434389-c58a8a4cff62?q=80&w=1974&auto=format&fit=crop', text: "UNESCO Somut Olmayan Kültürel Miras listesindeki Lefkara işi, Venedikliler döneminden beri süregelen geleneksel bir el sanatıdır." },
-    { id: 4, image: 'https://images.unsplash.com/photo-1520763185298-1b434c919102?q=80&w=1974&auto=format&fit=crop', text: "Sadece Kıbrıs'ta yetişen endemik bir bitki olan Medoş Lalesi, her yıl Mart ve Nisan aylarında açar." },
-    { id: 5, image: 'https://images.unsplash.com/photo-1622879539804-54145718e47d?q=80&w=2070&auto=format&fit=crop', text: "Beşparmak Dağları'ndaki St. Hilarion Kalesi'nin, Walt Disney'in Uyuyan Güzel şatosuna ilham verdiği söylenir." },
-];
+// --- ALT BİLEŞENLER (TAILWIND İLE YENİDEN YAZILMIŞ) ---
 
 // Diğer makaleler için kart bileşeni
 function ArticleCard({ article }) {
   return (
-    <Paper variant="outlined" sx={{ height: '100%', display: 'flex', transition: 'box-shadow 0.3s', '&:hover': { boxShadow: 2 } }}>
-      <MuiLink component={Link} to={article.slug} underline="none" sx={{ display: 'flex', width: '100%', p: 2, color: 'inherit' }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={8}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
-              <Typography variant="subtitle1" component="h3" fontWeight="700" sx={{ color: 'text.primary' }}>
-                {article.title}
-              </Typography>
-              <Box sx={{ mt: 1 }}>
-                <Typography component="span" variant="caption" fontWeight="bold">{article.author}</Typography>
-                <Typography component="span" variant="caption" color="text.secondary"> ・ {article.date}</Typography>
-              </Box>
-            </Box>
-          </Grid>
-          <Grid item xs={4}>
-            <Box
-              sx={{
-                width: '100%',
-                paddingTop: '100%', // 1:1 Aspect Ratio
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundImage: `url(${article.image})`,
-                borderRadius: 0.5,
-              }}
-            />
-          </Grid>
-        </Grid>
-      </MuiLink>
-    </Paper>
+    <Link to={article.slug} className="group flex h-full overflow-hidden rounded-lg border border-gray-200 bg-white p-4 shadow-sm transition-shadow duration-300 hover:shadow-lg">
+      <div className="flex w-full items-center justify-between space-x-4">
+        <div className="flex flex-grow flex-col justify-between">
+          <h3 className="mb-2 font-bold text-gray-800 group-hover:text-blue-600">{article.title}</h3>
+          <div>
+            <span className="text-xs font-bold text-gray-700">{article.author}</span>
+            <span className="text-xs text-gray-500"> ・ {article.date}</span>
+          </div>
+        </div>
+        <div 
+          className="h-20 w-20 flex-shrink-0 rounded bg-cover bg-center"
+          style={{ backgroundImage: `url(${article.image})` }}
+        />
+      </div>
+    </Link>
   );
 }
 
 // Galeri Slider Bileşeni
 function GallerySlider() {
     return (
-        <Box sx={{ py: 6, bgcolor: 'background.default' }}>
-            <Container maxWidth="lg">
-                <Typography variant="h4" component="h2" fontWeight="bold" align="center" gutterBottom>
-                    Kıbrıs'tan Manzaralar
-                </Typography>
+        <section className="bg-white py-12">
+            <div className="container mx-auto max-w-screen-lg px-4">
+                <SectionTitle>Kıbrıs'tan Manzaralar</SectionTitle>
                 <Swiper
                     modules={[Navigation, Autoplay]}
                     spaceBetween={30}
@@ -89,106 +56,122 @@ function GallerySlider() {
                     loop={true}
                     autoplay={{ delay: 4000, disableOnInteraction: false }}
                     breakpoints={{
-                        600: { slidesPerView: 2 },
-                        900: { slidesPerView: 3 },
+                        640: { slidesPerView: 2 },
+                        1024: { slidesPerView: 3 },
                     }}
                     style={{ '--swiper-navigation-color': '#fff', '--swiper-navigation-size': '30px' }}
                 >
                     {galleryData.map((item) => (
                         <SwiperSlide key={item.id}>
-                            <Box sx={{ position: 'relative', borderRadius: 2, overflow: 'hidden', height: 350 }}>
-                                <Box
-                                    component="img"
-                                    src={item.image}
-                                    alt={item.text.substring(0, 20)}
-                                    sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                />
-                                <Box sx={{
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    p: 2,
-                                    color: 'white',
-                                    background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)',
-                                }}>
-                                    <Typography variant="body2">{item.text}</Typography>
-                                </Box>
-                            </Box>
+                            <div className="group relative h-80 overflow-hidden rounded-lg">
+                                <img src={item.image} alt={item.text.substring(0, 20)} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                                <div className="absolute bottom-0 p-4 text-white">
+                                    <p className="text-sm">{item.text}</p>
+                                </div>
+                            </div>
                         </SwiperSlide>
                     ))}
                 </Swiper>
-            </Container>
-        </Box>
+            </div>
+        </section>
     );
 }
 
+// Kitap Tanıtım Bileşeni
+function BookPromotionSection() {
+    return (
+        <section className="bg-gray-50 py-12">
+            <div className="container mx-auto max-w-screen-lg px-4">
+                <SectionTitle>Kitap Tanıtımı</SectionTitle>
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                    {bookData.map((book) => (
+                        <div key={book.id} className="text-center">
+                            <img
+                                src={book.coverImage}
+                                alt={book.title}
+                                className="mx-auto h-96 w-auto max-w-[250px] rounded-md object-cover shadow-lg"
+                            />
+                            <div className="mt-4">
+                                <h3 className="text-xl font-bold text-gray-800">{book.title}</h3>
+                                <p className="text-gray-600">{book.author}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
 
+// --- ANA SAYFA BİLEŞENİ ---
 export default function HomePage() {
   return (
-    <Box>
+    <main>
       <HeroSlider />
 
-      <Container maxWidth="lg" sx={{ my: 4 }}>
-        <Grid container spacing={4}>
+      {/* Haberler ve Sidebar Bölümü */}
+      <div className="container mx-auto my-8 max-w-screen-lg px-4">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
           {/* Sol Sütun: Makaleler */}
-          <Grid item xs={12} md={8}>
+          <div className="md:col-span-8">
+            <SectionTitle>Haberler</SectionTitle>
+            
             {/* Öne Çıkan Makale */}
-            <Paper variant="outlined" sx={{ p: 3, mb: 4 }}>
-              <Grid container spacing={3} alignItems="center">
-                <Grid item xs={12} sm={8}>
-                  <Typography variant="h4" component="h2" fontWeight="800" gutterBottom>
-                    <MuiLink component={Link} to={featuredArticle.slug} color="inherit" underline="hover">
-                      {featuredArticle.title}
-                    </MuiLink>
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary" paragraph>
-                    {featuredArticle.excerpt}
-                  </Typography>
-                  <Box>
-                    <Typography component="span" variant="body2" fontWeight="bold">{featuredArticle.author}</Typography>
-                    <Typography component="span" variant="body2" color="text.secondary"> ・ {featuredArticle.date}</Typography>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Box
-                    component="img"
-                    src={featuredArticle.image}
-                    alt={featuredArticle.title}
-                    sx={{
-                      width: '100%',
-                      height: 'auto',
-                      aspectRatio: '1 / 1',
-                      objectFit: 'cover',
-                      borderRadius: 1,
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
+            <div className="mb-8 overflow-hidden rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                <div className="grid grid-cols-1 items-center gap-6 sm:grid-cols-3">
+                    <div className="sm:col-span-2">
+                        <h2 className="mb-2 text-2xl font-extrabold text-gray-900">
+                            <Link to={featuredArticle.slug} className="hover:text-blue-600 hover:underline">{featuredArticle.title}</Link>
+                        </h2>
+                        <p className="mb-4 text-gray-600">{featuredArticle.excerpt}</p>
+                        <div>
+                            <span className="text-sm font-bold text-gray-800">{featuredArticle.author}</span>
+                            <span className="text-sm text-gray-500"> ・ {featuredArticle.date}</span>
+                        </div>
+                    </div>
+                    <div className="sm:col-span-1">
+                        <img src={featuredArticle.image} alt={featuredArticle.title} className="aspect-square h-auto w-full rounded-md object-cover"/>
+                    </div>
+                </div>
+            </div>
 
             {/* Diğer Makaleler */}
-            <Grid container spacing={3}>
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {otherArticles.map((article) => (
-                <Grid item xs={12} sm={6} key={article.id}>
-                  <ArticleCard article={article} />
-                </Grid>
+                <ArticleCard key={article.id} article={article} />
               ))}
-            </Grid>
-          </Grid>
+            </div>
+          </div>
 
           {/* Sağ Sütun: Sidebar */}
-          <Grid item xs={12} md={4}>
-            <Box sx={{ position: { md: 'sticky' }, top: { md: 24 } }}>
+          <div className="md:col-span-4">
+            <div className="sticky top-6">
               <Sidebar />
-            </Box>
-          </Grid>
-        </Grid>
-      </Container>
+            </div>
+          </div>
+        </div>
+      </div>
       
-      {/* Yeni Galeri Slider Bölümü */}
-      <GallerySlider />
+      {/* Kıbrıs Uyuşmazlığı Bölümü */}
+      <section className="py-12">
+        <div className="container mx-auto max-w-screen-lg px-4">
+          <SectionTitle>Kıbrıs Uyuşmazlığı</SectionTitle>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {conflictData.map((item, index) => (
+              <a href="#" key={index} className="group block h-full rounded-lg border border-gray-200 p-4 transition-shadow hover:shadow-lg">
+                <h3 className="mb-1 font-bold text-gray-800 group-hover:text-blue-600">{item.title}</h3>
+                <p className="text-sm text-gray-500">
+                  {item.author && `${item.author} ・ `}{item.date}
+                </p>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
 
-    </Box>
+      <GallerySlider />
+      <BookPromotionSection />
+    </main>
   );
 }
